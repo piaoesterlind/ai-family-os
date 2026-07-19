@@ -4,6 +4,12 @@ const today = new Date()
 const currentYear = today.getFullYear()
 const currentMonth = today.getMonth()
 
+const demoDate = (offset) => {
+  const date = new Date(today)
+  date.setDate(today.getDate() + offset)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
 const initialMembers = [
   { id: 'me', firstName: 'Me', lastName: '', dateOfBirth: '', relationship: 'Me' },
   { id: 'child-1', firstName: 'Child 1', lastName: '', dateOfBirth: '', relationship: 'Child' },
@@ -11,11 +17,14 @@ const initialMembers = [
 ]
 
 const initialEvents = [
-  { id: 'event-1', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-15`, startTime: '07:45', endTime: '08:15', title: 'Kindergarten drop-off', category: 'School', memberId: 'child-1', notes: '' },
-  { id: 'event-2', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-16`, startTime: '16:00', endTime: '17:00', title: 'Speech therapy', category: 'Therapy', memberId: 'child-2', notes: 'Bring therapy bag.' },
-  { id: 'event-3', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-17`, startTime: '08:00', endTime: '08:05', title: 'Vitamin D reminder', category: 'Medication', memberId: 'child-1', notes: 'After breakfast.' },
-  { id: 'event-4', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-18`, startTime: '10:00', endTime: '10:45', title: 'Pediatrician appointment', category: 'Appointment', memberId: 'child-1', notes: 'Location to be confirmed.' },
-  { id: 'event-5', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-18`, startTime: '19:30', endTime: '19:45', title: 'Pack therapy bag', category: 'Reminder', memberId: 'child-2', notes: '' },
+  { id: 'event-1', date: demoDate(0), startTime: '07:45', endTime: '08:15', title: 'Kindergarten', category: 'School', memberId: 'child-1', notes: 'Drop-off at the main entrance.' },
+  { id: 'event-2', date: demoDate(0), startTime: '08:00', endTime: '08:05', title: 'Vitamin D reminder', category: 'Medication', memberId: 'child-1', notes: 'After breakfast.' },
+  { id: 'event-3', date: demoDate(1), startTime: '16:00', endTime: '17:00', title: 'Speech therapy', category: 'Therapy', memberId: 'child-2', notes: 'Bring therapy bag.' },
+  { id: 'event-4', date: demoDate(2), startTime: '10:00', endTime: '10:45', title: 'Pediatrician appointment', category: 'Appointment', memberId: 'child-1', notes: 'Location to be confirmed.' },
+  { id: 'event-5', date: demoDate(3), startTime: '08:00', endTime: '08:10', title: 'Bring diapers', category: 'Reminder', memberId: 'child-1', notes: 'Leave them by the front door.' },
+  { id: 'event-6', date: demoDate(3), startTime: '19:30', endTime: '19:45', title: 'Pack therapy bag', category: 'Reminder', memberId: 'child-2', notes: 'Prepare it for tomorrow.' },
+  { id: 'event-7', date: demoDate(5), startTime: '10:30', endTime: '11:30', title: 'Family walk', category: 'Reminder', memberId: 'me', notes: 'Park or forest trail, weather permitting.' },
+  { id: 'event-8', date: demoDate(6), startTime: '18:30', endTime: '19:00', title: 'Plan the week', category: 'Reminder', memberId: 'me', notes: 'Review calendar, bags, meals, and school notes.' },
 ]
 
 const initialTasks = [
@@ -57,15 +66,21 @@ function processBrainDump(text) {
 
     if (/(appointment|therapy|doctor|pediatrician|dentist|meeting|visit)/.test(lower)) {
       result.Appointments.push({ title: line, detail, icon: '🗓' })
-      if (detail === 'When should this happen?') result['Follow-up questions'].push({ title: `When is this appointment?`, detail: line, icon: '?' })
+      if (detail === 'When should this happen?') result['Follow-up questions'].push({ title: 'When is this appointment?', detail: line, icon: '?' })
     }
     if (/(remind|remember|bring|pack|buy|order|pick up|call|reply|send)/.test(lower)) result.Tasks.push({ title: line, detail, icon: '✓' })
     if (/(vitamin|medication|medicine|dose|tablet|prescription)/.test(lower)) result.Medications.push({ title: line, detail: 'Check timing and dosage', icon: '💛' })
     if (/(every |daily|routine|morning|evening|bedtime|after breakfast)/.test(lower)) result.Routines.push({ title: line, detail: 'Recurring family rhythm', icon: '⌁' })
   })
 
-  if (!result.Appointments.length && !result.Tasks.length && !result.Medications.length && !result.Routines.length) result.Tasks.push({ title: text.trim(), detail: 'Captured for your family plan', icon: '✦' })
-  if (!result['Follow-up questions'].length && /(?:need|should|remember)/i.test(text)) result['Follow-up questions'].push({ title: 'Who is this for?', detail: 'Add a family member when you are ready.', icon: '?' })
+  if (!result.Appointments.length && !result.Tasks.length && !result.Medications.length && !result.Routines.length) {
+    result.Tasks.push({ title: text.trim(), detail: 'Captured for your family plan', icon: '✦' })
+  }
+
+  if (!result['Follow-up questions'].length && /(?:need|should|remember)/i.test(text)) {
+    result['Follow-up questions'].push({ title: 'Who is this for?', detail: 'Add a family member when you are ready.', icon: '?' })
+  }
+
   return result
 }
 
@@ -74,7 +89,12 @@ function SectionHeading({ eyebrow, title, action }) {
 }
 
 function Modal({ children, label, onClose, className = '' }) {
-  return <div className="modal-backdrop" role="presentation" onClick={onClose}><section className={`modal ${className}`} role="dialog" aria-modal="true" aria-label={label} onClick={(event) => event.stopPropagation()}><button className="close-button" type="button" onClick={onClose} aria-label="Close">×</button>{children}</section></div>
+  return <div className="modal-backdrop" role="presentation" onClick={onClose}>
+    <section className={`modal ${className}`} role="dialog" aria-modal="true" aria-label={label} onClick={(event) => event.stopPropagation()}>
+      <button className="close-button" type="button" onClick={onClose} aria-label="Close">×</button>
+      {children}
+    </section>
+  </div>
 }
 
 function App() {
@@ -83,20 +103,33 @@ function App() {
   const [familyMenuOpen, setFamilyMenuOpen] = useState(false)
   const [memberModal, setMemberModal] = useState(null)
   const [memberForm, setMemberForm] = useState(emptyMember)
+
   const [events, setEvents] = useState(initialEvents)
   const [monthDate, setMonthDate] = useState(new Date(currentYear, currentMonth, 1))
   const [calendarOpen, setCalendarOpen] = useState(false)
   const [selectedDay, setSelectedDay] = useState(null)
   const [eventModalOpen, setEventModalOpen] = useState(false)
-  const [eventForm, setEventForm] = useState({ title: '', date: toIsoDate(today), startTime: '09:00', endTime: '10:00', category: 'Appointment', memberId: 'me', notes: '' })
+  const [editingEventId, setEditingEventId] = useState(null)
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    date: toIsoDate(today),
+    startTime: '09:00',
+    endTime: '10:00',
+    category: 'Appointment',
+    memberId: 'me',
+    notes: '',
+  })
+
   const [tasks, setTasks] = useState(initialTasks)
   const [medicationDone, setMedicationDone] = useState(false)
+
   const [brainDump, setBrainDump] = useState('')
   const [processedData, setProcessedData] = useState(null)
   const [processing, setProcessing] = useState(false)
   const [brainMessage, setBrainMessage] = useState('')
   const [listening, setListening] = useState(false)
   const recognitionRef = useRef(null)
+
   const [question, setQuestion] = useState('')
   const [chat, setChat] = useState([{ role: 'assistant', text: 'Hi — I’m here to make the day feel lighter. What would you like to plan?' }])
 
@@ -108,12 +141,23 @@ function App() {
     const date = new Date(today)
     date.setDate(today.getDate() + index)
     const iso = toIsoDate(date)
-    return { day: new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date), date: date.getDate(), iso, events: events.filter((event) => event.date === iso).slice(0, 3) }
+
+    return {
+      day: new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date),
+      date: date.getDate(),
+      iso,
+      events: events.filter((event) => event.date === iso).slice(0, 3),
+    }
   })
 
   const openMemberModal = (mode, member = null) => {
     setMemberModal({ mode, memberId: member?.id })
-    setMemberForm(member ? { firstName: member.firstName, lastName: member.lastName, dateOfBirth: member.dateOfBirth, relationship: member.relationship } : emptyMember)
+    setMemberForm(member ? {
+      firstName: member.firstName,
+      lastName: member.lastName,
+      dateOfBirth: member.dateOfBirth,
+      relationship: member.relationship,
+    } : emptyMember)
     setFamilyMenuOpen(false)
   }
 
@@ -122,7 +166,9 @@ function App() {
     if (!memberForm.firstName.trim()) return
 
     if (memberModal.mode === 'edit') {
-      setMembers((items) => items.map((item) => item.id === memberModal.memberId ? { ...item, ...memberForm, firstName: memberForm.firstName.trim() } : item))
+      setMembers((items) => items.map((item) => item.id === memberModal.memberId
+        ? { ...item, ...memberForm, firstName: memberForm.firstName.trim() }
+        : item))
     } else {
       const member = { id: `member-${Date.now()}`, ...memberForm, firstName: memberForm.firstName.trim() }
       setMembers((items) => [...items, member])
@@ -150,20 +196,32 @@ function App() {
     recognition.interimResults = true
     recognition.continuous = false
 
+    let receivedTranscript = false
+
     recognition.onstart = () => {
       setListening(true)
       setBrainMessage('Listening… tap Voice note again to stop.')
     }
 
     recognition.onresult = (event) => {
-      const transcript = Array.from(event.results).map((result) => result[0].transcript).join(' ')
-      setBrainDump((value) => `${value}${value ? ' ' : ''}${transcript}`)
+      const transcript = Array.from(event.results).map((result) => result[0].transcript).join(' ').trim()
+
+      if (transcript) {
+        receivedTranscript = true
+        setBrainDump((value) => `${value}${value ? ' ' : ''}${transcript}`)
+        setBrainMessage('Voice note added. You can keep typing or process it with AI.')
+      }
     }
 
-    recognition.onerror = () => setBrainMessage('I couldn’t hear that clearly. Please try again or type your thought.')
+    recognition.onerror = () => setBrainMessage('Voice input could not capture your speech. Please try again or type your thought.')
 
     recognition.onend = () => {
       setListening(false)
+
+      if (!receivedTranscript) {
+        setBrainMessage('Voice input could not capture your speech. Please try again or type your thought.')
+      }
+
       recognitionRef.current = null
     }
 
@@ -198,7 +256,30 @@ function App() {
   }
 
   const openEventForm = () => {
-    setEventForm({ title: '', date: selectedDay || toIsoDate(today), startTime: '09:00', endTime: '10:00', category: 'Appointment', memberId: selectedMemberId, notes: '' })
+    setEventForm({
+      title: '',
+      date: selectedDay || toIsoDate(today),
+      startTime: '09:00',
+      endTime: '10:00',
+      category: 'Appointment',
+      memberId: selectedMemberId,
+      notes: '',
+    })
+    setEditingEventId(null)
+    setEventModalOpen(true)
+  }
+
+  const openEditEvent = (event) => {
+    setEventForm({
+      title: event.title,
+      date: event.date,
+      startTime: event.startTime,
+      endTime: event.endTime,
+      category: event.category,
+      memberId: event.memberId,
+      notes: event.notes,
+    })
+    setEditingEventId(event.id)
     setEventModalOpen(true)
   }
 
@@ -206,9 +287,29 @@ function App() {
     event.preventDefault()
     if (!eventForm.title.trim()) return
 
-    setEvents((items) => [...items, { ...eventForm, id: `event-${Date.now()}`, title: eventForm.title.trim() }])
+    if (editingEventId) {
+      setEvents((items) => items.map((item) => item.id === editingEventId
+        ? { ...item, ...eventForm, title: eventForm.title.trim() }
+        : item))
+    } else {
+      setEvents((items) => [...items, {
+        ...eventForm,
+        id: `event-${Date.now()}`,
+        title: eventForm.title.trim(),
+      }])
+    }
+
     setSelectedDay(eventForm.date)
     setEventModalOpen(false)
+    setEditingEventId(null)
+  }
+
+  const deleteEvent = () => {
+    if (!editingEventId || !window.confirm('Delete this event? This only removes it from the local demo.')) return
+
+    setEvents((items) => items.filter((item) => item.id !== editingEventId))
+    setEventModalOpen(false)
+    setEditingEventId(null)
   }
 
   const askAssistant = (prompt) => {
@@ -222,7 +323,10 @@ function App() {
 
   return <main>
     <nav className="topbar">
-      <a className="brand" href="#top" aria-label="AI Family OS home"><span className="brand-mark">✦</span><span>AI Family <em>OS</em></span></a>
+      <a className="brand" href="#top" aria-label="AI Family OS home">
+        <span className="brand-mark">✦</span>
+        <span>AI Family <em>OS</em></span>
+      </a>
 
       <div className="family-control">
         <button className="family-button" type="button" onClick={() => setFamilyMenuOpen((value) => !value)} aria-expanded={familyMenuOpen}>
@@ -237,8 +341,10 @@ function App() {
               <span className="member-dot">{member.firstName.slice(0, 1)}</span>
               <span><strong>{memberName(member)}</strong><small>{member.relationship}</small></span>
             </button>
+
             <button className="edit-member" type="button" onClick={() => openMemberModal('edit', member)} aria-label={`Edit ${memberName(member)}`}>✎</button>
           </div>)}
+
           <button className="add-member-button" type="button" onClick={() => openMemberModal('add')}>＋ Add Family Member</button>
         </div>}
       </div>
@@ -251,20 +357,30 @@ function App() {
     </section>
 
     <section className="calendar-section">
-      <SectionHeading eyebrow="The next seven days" title="What’s coming up" action={<button className="outline-button" type="button" onClick={() => setCalendarOpen(true)}>Open Calendar <span>→</span></button>} />
+      <SectionHeading
+        eyebrow="The next seven days"
+        title="What’s coming up"
+        action={<button className="outline-button" type="button" onClick={() => setCalendarOpen(true)}>Open Calendar <span>→</span></button>}
+      />
+
       <div className="weekly-calendar">
         {week.map((day, index) => <article className={`day-card ${index === 0 ? 'today' : ''}`} key={day.iso}>
           <header><span>{day.day}</span><strong>{day.date}</strong></header>
+
           <div className="day-events">
-            {day.events.length ? day.events.map((event) => <div className={`calendar-event ${categoryStyles[event.category]}`} key={event.id}><time>{event.startTime}</time><span>{event.title}</span></div>) : <span className="clear-day">A quiet day</span>}
+            {day.events.length
+              ? day.events.map((event) => <div className={`calendar-event ${categoryStyles[event.category]}`} key={event.id}><time>{event.startTime}</time><span>{event.title}</span></div>)
+              : <span className="clear-day">A quiet day</span>}
           </div>
         </article>)}
       </div>
+
       <p className="calendar-note">A gentle view of the plans and routines that matter most.</p>
     </section>
 
     <section className="tasks-section">
       <SectionHeading eyebrow="Small steps, lighter day" title="Tasks & to-dos" action={<span className="count-pill">{tasks.filter((task) => !task.done).length} to do</span>} />
+
       <div className="task-list">
         {tasks.map((task, index) => <button className={`task-row ${task.done ? 'complete' : ''}`} onClick={() => setTasks((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, done: !item.done } : item))} type="button" key={task.title}>
           <span className="check">{task.done && '✓'}</span>
@@ -272,6 +388,7 @@ function App() {
           <span className={`source-badge ${task.tone}`}>{task.source}</span>
         </button>)}
       </div>
+
       <p className="connection-note">Ready for future connections to Todoist, Apple Reminders, Microsoft To Do, and Google Tasks.</p>
     </section>
 
@@ -310,6 +427,7 @@ function App() {
 
       <div className={`input-shell ${listening ? 'listening' : ''}`}>
         <textarea value={brainDump} onChange={(event) => setBrainDump(event.target.value)} placeholder="Tell me what’s on your mind…" aria-label="Brain dump" />
+
         <div className="input-actions">
           <button className={`voice-button ${listening ? 'active' : ''}`} onClick={toggleVoice} type="button" aria-pressed={listening}>◉ {listening ? 'Stop listening' : 'Voice note'}</button>
           <button className="primary-button" onClick={handleProcess} type="button" disabled={processing}>✦ {processing ? 'Finding the threads…' : 'Process with AI'}</button>
@@ -321,10 +439,13 @@ function App() {
 
     {processedData && <section className="ai-result">
       <SectionHeading eyebrow="A calmer view" title="Here’s what I found" action={<span className="ai-badge">✦ Mock AI processing</span>} />
+
       <div className="extracted-grid">
         {Object.entries(processedData).map(([category, items]) => <article className="extract-card" key={category}>
           <h3>{category}<span>{items.length}</span></h3>
-          {items.length ? <ul>{items.map((item, index) => <li key={`${item.title}-${index}`}><span className="item-icon">{item.icon}</span><div><strong>{item.title}</strong><small>{item.detail}</small></div></li>)}</ul> : <p className="empty-output">Nothing found here yet.</p>}
+          {items.length
+            ? <ul>{items.map((item, index) => <li key={`${item.title}-${index}`}><span className="item-icon">{item.icon}</span><div><strong>{item.title}</strong><small>{item.detail}</small></div></li>)}</ul>
+            : <p className="empty-output">Nothing found here yet.</p>}
         </article>)}
       </div>
     </section>}
@@ -357,6 +478,7 @@ function App() {
     {memberModal && <Modal label={memberModal.mode === 'add' ? 'Add family member' : 'Edit family member'} onClose={() => setMemberModal(null)}>
       <p className="eyebrow">My Family</p>
       <h2>{memberModal.mode === 'add' ? 'Add a family member' : 'Edit family member'}</h2>
+
       <form className="form-stack" onSubmit={saveMember}>
         <label>First name<input required value={memberForm.firstName} onChange={(event) => setMemberForm({ ...memberForm, firstName: event.target.value })} /></label>
         <label>Last name<input value={memberForm.lastName} onChange={(event) => setMemberForm({ ...memberForm, lastName: event.target.value })} /></label>
@@ -368,6 +490,7 @@ function App() {
 
     {calendarOpen && <Modal label="Calendar" className="calendar-modal" onClose={() => setCalendarOpen(false)}>
       <p className="eyebrow">Calendar preview</p>
+
       <div className="month-title">
         <button type="button" onClick={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1))} aria-label="Previous month">←</button>
         <h2>{new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(monthDate)}</h2>
@@ -376,6 +499,7 @@ function App() {
 
       <div className="month-grid">
         <div className="month-weekdays">{weekdays.map((day) => <span key={day}>{day}</span>)}</div>
+
         <div className="month-days">
           {monthCells().map((date, index) => {
             if (!date) return <span className="blank-day" key={`blank-${index}`} />
@@ -398,36 +522,46 @@ function App() {
     {selectedDay && <Modal label={`Plans for ${formatDate(selectedDay)}`} className="day-modal" onClose={() => setSelectedDay(null)}>
       <p className="eyebrow">Day details</p>
       <h2>{formatDate(selectedDay)}</h2>
+
       <div className="day-detail-events">
-        {events.filter((event) => event.date === selectedDay).length ? events.filter((event) => event.date === selectedDay).sort((a, b) => a.startTime.localeCompare(b.startTime)).map((event) => <article className="detail-event" key={event.id}>
-          <span className={`event-dot ${categoryStyles[event.category]}`} />
-          <div>
-            <time>{event.startTime}–{event.endTime}</time>
-            <strong>{event.title}</strong>
-            <small>{event.category} · {memberName(members.find((member) => member.id === event.memberId))}</small>
-            {event.notes && <p>{event.notes}</p>}
-          </div>
-        </article>) : <p className="empty-day">Nothing planned yet. Enjoy the breathing room.</p>}
+        {events.filter((event) => event.date === selectedDay).length
+          ? events.filter((event) => event.date === selectedDay).sort((a, b) => a.startTime.localeCompare(b.startTime)).map((event) => <button className="detail-event" type="button" onClick={() => openEditEvent(event)} key={event.id}>
+            <span className={`event-dot ${categoryStyles[event.category]}`} />
+            <div>
+              <time>{event.startTime}–{event.endTime}</time>
+              <strong>{event.title}</strong>
+              <small>{event.category} · {memberName(members.find((member) => member.id === event.memberId))}</small>
+              {event.notes && <p>{event.notes}</p>}
+            </div>
+          </button>)
+          : <p className="empty-day">Nothing planned yet. Enjoy the breathing room.</p>}
       </div>
+
       <button className="primary-button form-submit" type="button" onClick={openEventForm}>＋ Add Event</button>
     </Modal>}
 
-    {eventModalOpen && <Modal label="Add event" onClose={() => setEventModalOpen(false)}>
+    {eventModalOpen && <Modal label={editingEventId ? 'Edit event' : 'Add event'} onClose={() => { setEventModalOpen(false); setEditingEventId(null) }}>
       <p className="eyebrow">Calendar</p>
-      <h2>Add an event</h2>
+      <h2>{editingEventId ? 'Edit event' : 'Add an event'}</h2>
+
       <form className="form-stack" onSubmit={saveEvent}>
         <label>Event title<input required value={eventForm.title} onChange={(event) => setEventForm({ ...eventForm, title: event.target.value })} placeholder="e.g. Dentist appointment" /></label>
+
         <div className="form-two-columns">
           <label>Date<input required type="date" value={eventForm.date} onChange={(event) => setEventForm({ ...eventForm, date: event.target.value })} /></label>
           <label>Family member<select value={eventForm.memberId} onChange={(event) => setEventForm({ ...eventForm, memberId: event.target.value })}>{members.map((member) => <option value={member.id} key={member.id}>{memberName(member)}</option>)}</select></label>
         </div>
+
         <div className="form-two-columns">
           <label>Start time<input required type="time" value={eventForm.startTime} onChange={(event) => setEventForm({ ...eventForm, startTime: event.target.value })} /></label>
           <label>End time<input required type="time" value={eventForm.endTime} onChange={(event) => setEventForm({ ...eventForm, endTime: event.target.value })} /></label>
         </div>
+
         <label>Category<select value={eventForm.category} onChange={(event) => setEventForm({ ...eventForm, category: event.target.value })}>{Object.keys(categoryStyles).map((category) => <option key={category}>{category}</option>)}</select></label>
         <label>Notes <span>(optional)</span><textarea value={eventForm.notes} onChange={(event) => setEventForm({ ...eventForm, notes: event.target.value })} /></label>
-        <button className="primary-button form-submit" type="submit">Save event</button>
+
+        <button className="primary-button form-submit" type="submit">{editingEventId ? 'Save changes' : 'Save event'}</button>
+        {editingEventId && <button className="delete-button" type="button" onClick={deleteEvent}>Delete Event</button>}
       </form>
     </Modal>}
 
