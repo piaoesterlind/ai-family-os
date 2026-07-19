@@ -214,3 +214,26 @@ footer i { display:none; }
   .month-day,.blank-day { min-height:82px; }
   footer i { display:block; margin-left:auto; font:12px 'Fraunces'; }
 }
+
+.detail-event {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+}
+
+.detail-event:active {
+  background: #f1f6f3;
+}
+
+.delete-button {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e5c6bd;
+  border-radius: 10px;
+  background: transparent;
+  color: #a55d4c;
+  font-size: 12px;
+  font-weight: 700;
+}
