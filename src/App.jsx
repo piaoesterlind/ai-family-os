@@ -1,24 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-const initialDump = `Jonas has a pediatrician appointment next Tuesday at 10. Remind me to bring diapers to kindergarten on Thursday. Mansur has speech therapy every Thursday afternoon. Jonas needs Vitamin D after breakfast. We should pack the therapy bag the night before.`
+const today = new Date()
+const currentYear = today.getFullYear()
+const currentMonth = today.getMonth()
 
-const week = [
-  { day: 'Mon', date: '15', events: [{ time: '07:45', label: 'Kindergarten', tone: 'teal' }, { time: '19:00', label: 'Wind-down routine', tone: 'sand' }] },
-  { day: 'Tue', date: '16', current: true, events: [{ time: '09:30', label: 'Kindergarten', tone: 'teal' }, { time: '16:00', label: 'Speech therapy', tone: 'lilac' }] },
-  { day: 'Wed', date: '17', events: [{ time: '08:00', label: 'Vitamin D reminder', tone: 'sun' }, { time: '19:30', label: 'Pack therapy bag', tone: 'coral' }] },
-  { day: 'Thu', date: '18', events: [{ time: '08:00', label: 'Bring diapers', tone: 'coral' }, { time: '16:00', label: 'Speech therapy', tone: 'lilac' }] },
-  { day: 'Fri', date: '19', events: [{ time: '08:00', label: 'Kindergarten', tone: 'teal' }] },
-  { day: 'Sat', date: '20', events: [{ time: '10:30', label: 'Family walk', tone: 'sand' }] },
-  { day: 'Sun', date: '21', events: [{ time: '18:30', label: 'Plan the week', tone: 'teal' }] },
+const initialMembers = [
+  { id: 'me', firstName: 'Me', lastName: '', dateOfBirth: '', relationship: 'Me' },
+  { id: 'child-1', firstName: 'Child 1', lastName: '', dateOfBirth: '', relationship: 'Child' },
+  { id: 'child-2', firstName: 'Child 2', lastName: '', dateOfBirth: '', relationship: 'Child' },
 ]
 
-const extractedItems = {
-  Appointments: [{ title: 'Pediatrician — Jonas', detail: 'Tuesday · 10:00', icon: '🩺' }, { title: 'Speech therapy — Mansur', detail: 'Every Thursday · afternoon', icon: '💬' }],
-  Tasks: [{ title: 'Bring diapers to kindergarten', detail: 'Thursday', icon: '🧷' }, { title: 'Pack the therapy bag', detail: 'Wednesday evening', icon: '🎒' }],
-  Medications: [{ title: 'Jonas — Vitamin D', detail: 'After breakfast · daily', icon: '💛' }],
-  Routines: [{ title: 'Therapy-bag check', detail: 'The evening before therapy', icon: '✓' }],
-  'Follow-up questions': [{ title: 'Which pediatrician is Jonas seeing?', detail: 'Add the location to the appointment', icon: '?' }],
-}
+const initialEvents = [
+  { id: 'event-1', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-15`, startTime: '07:45', endTime: '08:15', title: 'Kindergarten drop-off', category: 'School', memberId: 'child-1', notes: '' },
+  { id: 'event-2', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-16`, startTime: '16:00', endTime: '17:00', title: 'Speech therapy', category: 'Therapy', memberId: 'child-2', notes: 'Bring therapy bag.' },
+  { id: 'event-3', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-17`, startTime: '08:00', endTime: '08:05', title: 'Vitamin D reminder', category: 'Medication', memberId: 'child-1', notes: 'After breakfast.' },
+  { id: 'event-4', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-18`, startTime: '10:00', endTime: '10:45', title: 'Pediatrician appointment', category: 'Appointment', memberId: 'child-1', notes: 'Location to be confirmed.' },
+  { id: 'event-5', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-18`, startTime: '19:30', endTime: '19:45', title: 'Pack therapy bag', category: 'Reminder', memberId: 'child-2', notes: '' },
+]
 
 const initialTasks = [
   { title: 'Pack the therapy bag', note: 'Before 15:30 today', source: 'Routine', tone: 'lilac', done: false },
@@ -33,39 +31,190 @@ const assistantAnswers = {
   'Are there any conflicts this week?': 'No conflicts found in this demo. Thursday has both kindergarten errands and speech therapy, so I would prepare the therapy bag on Wednesday evening.',
 }
 
+const categoryStyles = { School: 'teal', Therapy: 'lilac', Appointment: 'coral', Medication: 'sun', Reminder: 'sand' }
+const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const emptyMember = { firstName: '', lastName: '', dateOfBirth: '', relationship: 'Child' }
+
+function toIsoDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+function formatDate(dateString, options = { weekday: 'long', month: 'long', day: 'numeric' }) {
+  return new Intl.DateTimeFormat('en-US', options).format(new Date(`${dateString}T12:00:00`))
+}
+
+function memberName(member) {
+  return member ? `${member.firstName}${member.lastName ? ` ${member.lastName}` : ''}` : 'My Family'
+}
+
+function processBrainDump(text) {
+  const lines = text.split(/[.!?\n]+/).map((line) => line.trim()).filter(Boolean)
+  const result = { Appointments: [], Tasks: [], Medications: [], Routines: [], 'Follow-up questions': [] }
+
+  lines.forEach((line) => {
+    const lower = line.toLowerCase()
+    const detail = lower.match(/(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|tomorrow|next week|at \d{1,2}(?::\d{2})?)/)?.[0] || 'When should this happen?'
+
+    if (/(appointment|therapy|doctor|pediatrician|dentist|meeting|visit)/.test(lower)) {
+      result.Appointments.push({ title: line, detail, icon: '🗓' })
+      if (detail === 'When should this happen?') result['Follow-up questions'].push({ title: `When is this appointment?`, detail: line, icon: '?' })
+    }
+    if (/(remind|remember|bring|pack|buy|order|pick up|call|reply|send)/.test(lower)) result.Tasks.push({ title: line, detail, icon: '✓' })
+    if (/(vitamin|medication|medicine|dose|tablet|prescription)/.test(lower)) result.Medications.push({ title: line, detail: 'Check timing and dosage', icon: '💛' })
+    if (/(every |daily|routine|morning|evening|bedtime|after breakfast)/.test(lower)) result.Routines.push({ title: line, detail: 'Recurring family rhythm', icon: '⌁' })
+  })
+
+  if (!result.Appointments.length && !result.Tasks.length && !result.Medications.length && !result.Routines.length) result.Tasks.push({ title: text.trim(), detail: 'Captured for your family plan', icon: '✦' })
+  if (!result['Follow-up questions'].length && /(?:need|should|remember)/i.test(text)) result['Follow-up questions'].push({ title: 'Who is this for?', detail: 'Add a family member when you are ready.', icon: '?' })
+  return result
+}
+
 function SectionHeading({ eyebrow, title, action }) {
   return <div className="section-heading"><div>{eyebrow && <p className="eyebrow">{eyebrow}</p>}<h2>{title}</h2></div>{action}</div>
 }
 
-function WeekCalendar({ expanded = false }) {
-  return <div className={expanded ? 'calendar-grid expanded' : 'calendar-grid'}>
-    {week.map((day) => <article className={`day-card ${day.current ? 'today' : ''}`} key={day.date}>
-      <header><span>{day.day}</span><strong>{day.date}</strong></header>
-      <div className="day-events">{day.events.map((event) => <div className={`calendar-event ${event.tone}`} key={event.label}><time>{event.time}</time><span>{event.label}</span></div>)}</div>
-    </article>)}
-  </div>
+function Modal({ children, label, onClose, className = '' }) {
+  return <div className="modal-backdrop" role="presentation" onClick={onClose}><section className={`modal ${className}`} role="dialog" aria-modal="true" aria-label={label} onClick={(event) => event.stopPropagation()}><button className="close-button" type="button" onClick={onClose} aria-label="Close">×</button>{children}</section></div>
 }
 
 function App() {
-  const [brainDump, setBrainDump] = useState(initialDump)
-  const [processed, setProcessed] = useState(false)
-  const [processing, setProcessing] = useState(false)
-  const [listening, setListening] = useState(false)
+  const [members, setMembers] = useState(initialMembers)
+  const [selectedMemberId, setSelectedMemberId] = useState('me')
+  const [familyMenuOpen, setFamilyMenuOpen] = useState(false)
+  const [memberModal, setMemberModal] = useState(null)
+  const [memberForm, setMemberForm] = useState(emptyMember)
+  const [events, setEvents] = useState(initialEvents)
+  const [monthDate, setMonthDate] = useState(new Date(currentYear, currentMonth, 1))
   const [calendarOpen, setCalendarOpen] = useState(false)
+  const [selectedDay, setSelectedDay] = useState(null)
+  const [eventModalOpen, setEventModalOpen] = useState(false)
+  const [eventForm, setEventForm] = useState({ title: '', date: toIsoDate(today), startTime: '09:00', endTime: '10:00', category: 'Appointment', memberId: 'me', notes: '' })
   const [tasks, setTasks] = useState(initialTasks)
   const [medicationDone, setMedicationDone] = useState(false)
+  const [brainDump, setBrainDump] = useState('')
+  const [processedData, setProcessedData] = useState(null)
+  const [processing, setProcessing] = useState(false)
+  const [brainMessage, setBrainMessage] = useState('')
+  const [listening, setListening] = useState(false)
+  const recognitionRef = useRef(null)
   const [question, setQuestion] = useState('')
-  const [chat, setChat] = useState([{ role: 'assistant', text: 'Hi Pia — I’m here to make the day feel lighter. What would you like to plan?' }])
+  const [chat, setChat] = useState([{ role: 'assistant', text: 'Hi — I’m here to make the day feel lighter. What would you like to plan?' }])
 
-  const processDump = () => {
-    if (!brainDump.trim()) return
+  const selectedMember = members.find((member) => member.id === selectedMemberId) || members[0]
+
+  useEffect(() => () => recognitionRef.current?.stop(), [])
+
+  const week = Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(today)
+    date.setDate(today.getDate() + index)
+    const iso = toIsoDate(date)
+    return { day: new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(date), date: date.getDate(), iso, events: events.filter((event) => event.date === iso).slice(0, 3) }
+  })
+
+  const openMemberModal = (mode, member = null) => {
+    setMemberModal({ mode, memberId: member?.id })
+    setMemberForm(member ? { firstName: member.firstName, lastName: member.lastName, dateOfBirth: member.dateOfBirth, relationship: member.relationship } : emptyMember)
+    setFamilyMenuOpen(false)
+  }
+
+  const saveMember = (event) => {
+    event.preventDefault()
+    if (!memberForm.firstName.trim()) return
+
+    if (memberModal.mode === 'edit') {
+      setMembers((items) => items.map((item) => item.id === memberModal.memberId ? { ...item, ...memberForm, firstName: memberForm.firstName.trim() } : item))
+    } else {
+      const member = { id: `member-${Date.now()}`, ...memberForm, firstName: memberForm.firstName.trim() }
+      setMembers((items) => [...items, member])
+      setSelectedMemberId(member.id)
+    }
+
+    setMemberModal(null)
+  }
+
+  const toggleVoice = () => {
+    if (listening) {
+      recognitionRef.current?.stop()
+      return
+    }
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+
+    if (!SpeechRecognition) {
+      setBrainMessage('Voice input is not supported by this browser. You can type your thoughts instead.')
+      return
+    }
+
+    const recognition = new SpeechRecognition()
+    recognition.lang = 'en-US'
+    recognition.interimResults = true
+    recognition.continuous = false
+
+    recognition.onstart = () => {
+      setListening(true)
+      setBrainMessage('Listening… tap Voice note again to stop.')
+    }
+
+    recognition.onresult = (event) => {
+      const transcript = Array.from(event.results).map((result) => result[0].transcript).join(' ')
+      setBrainDump((value) => `${value}${value ? ' ' : ''}${transcript}`)
+    }
+
+    recognition.onerror = () => setBrainMessage('I couldn’t hear that clearly. Please try again or type your thought.')
+
+    recognition.onend = () => {
+      setListening(false)
+      recognitionRef.current = null
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+  }
+
+  const handleProcess = () => {
+    if (!brainDump.trim()) {
+      setBrainMessage('Add a thought first, then I can organize it for you.')
+      setProcessedData(null)
+      return
+    }
+
     setProcessing(true)
-    setTimeout(() => { setProcessing(false); setProcessed(true) }, 650)
+    setBrainMessage('')
+
+    setTimeout(() => {
+      setProcessedData(processBrainDump(brainDump))
+      setProcessing(false)
+    }, 500)
+  }
+
+  const monthCells = () => {
+    const year = monthDate.getFullYear()
+    const month = monthDate.getMonth()
+    const firstDay = new Date(year, month, 1)
+    const offset = (firstDay.getDay() + 6) % 7
+    const days = new Date(year, month + 1, 0).getDate()
+
+    return [...Array(offset).fill(null), ...Array.from({ length: days }, (_, index) => new Date(year, month, index + 1))]
+  }
+
+  const openEventForm = () => {
+    setEventForm({ title: '', date: selectedDay || toIsoDate(today), startTime: '09:00', endTime: '10:00', category: 'Appointment', memberId: selectedMemberId, notes: '' })
+    setEventModalOpen(true)
+  }
+
+  const saveEvent = (event) => {
+    event.preventDefault()
+    if (!eventForm.title.trim()) return
+
+    setEvents((items) => [...items, { ...eventForm, id: `event-${Date.now()}`, title: eventForm.title.trim() }])
+    setSelectedDay(eventForm.date)
+    setEventModalOpen(false)
   }
 
   const askAssistant = (prompt) => {
     const cleaned = prompt.trim()
     if (!cleaned) return
+
     const answer = assistantAnswers[cleaned] || 'I’ve added that thought to our planning view. In a connected version, I would check family routines and calendars for the best next step.'
     setChat((messages) => [...messages, { role: 'user', text: cleaned }, { role: 'assistant', text: answer }])
     setQuestion('')
@@ -74,50 +223,213 @@ function App() {
   return <main>
     <nav className="topbar">
       <a className="brand" href="#top" aria-label="AI Family OS home"><span className="brand-mark">✦</span><span>AI Family <em>OS</em></span></a>
-      <div className="family-chip"><span className="avatar-stack"><i>J</i><i>M</i><i>P</i></span><span>The Österlind family</span><b>⌄</b></div>
+
+      <div className="family-control">
+        <button className="family-button" type="button" onClick={() => setFamilyMenuOpen((value) => !value)} aria-expanded={familyMenuOpen}>
+          <span className="avatar-stack"><i>{selectedMember.firstName.slice(0, 1)}</i></span>
+          <span>My Family</span>
+          <b>⌄</b>
+        </button>
+
+        {familyMenuOpen && <div className="family-menu">
+          {members.map((member) => <div className={`family-menu-row ${member.id === selectedMemberId ? 'active' : ''}`} key={member.id}>
+            <button type="button" onClick={() => { setSelectedMemberId(member.id); setFamilyMenuOpen(false) }}>
+              <span className="member-dot">{member.firstName.slice(0, 1)}</span>
+              <span><strong>{memberName(member)}</strong><small>{member.relationship}</small></span>
+            </button>
+            <button className="edit-member" type="button" onClick={() => openMemberModal('edit', member)} aria-label={`Edit ${memberName(member)}`}>✎</button>
+          </div>)}
+          <button className="add-member-button" type="button" onClick={() => openMemberModal('add')}>＋ Add Family Member</button>
+        </div>}
+      </div>
     </nav>
 
     <section id="top" className="hero">
-      <p className="eyebrow">Tuesday, 16 July</p>
-      <h1>Good morning, Pia.<br /><span>Your family is in good hands.</span></h1>
+      <p className="eyebrow">{formatDate(toIsoDate(today), { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+      <h1>Good morning.<br /><span>Your family is in good hands.</span></h1>
       <p className="tagline">Capture everything. Organize nothing. AI does the rest.</p>
     </section>
 
-    <section className="calendar-section" aria-labelledby="calendar-title">
+    <section className="calendar-section">
       <SectionHeading eyebrow="The next seven days" title="What’s coming up" action={<button className="outline-button" type="button" onClick={() => setCalendarOpen(true)}>Open Calendar <span>→</span></button>} />
-      <WeekCalendar />
+      <div className="weekly-calendar">
+        {week.map((day, index) => <article className={`day-card ${index === 0 ? 'today' : ''}`} key={day.iso}>
+          <header><span>{day.day}</span><strong>{day.date}</strong></header>
+          <div className="day-events">
+            {day.events.length ? day.events.map((event) => <div className={`calendar-event ${categoryStyles[event.category]}`} key={event.id}><time>{event.startTime}</time><span>{event.title}</span></div>) : <span className="clear-day">A quiet day</span>}
+          </div>
+        </article>)}
+      </div>
       <p className="calendar-note">A gentle view of the plans and routines that matter most.</p>
     </section>
 
-    <section className="tasks-section" aria-labelledby="tasks-title">
+    <section className="tasks-section">
       <SectionHeading eyebrow="Small steps, lighter day" title="Tasks & to-dos" action={<span className="count-pill">{tasks.filter((task) => !task.done).length} to do</span>} />
       <div className="task-list">
         {tasks.map((task, index) => <button className={`task-row ${task.done ? 'complete' : ''}`} onClick={() => setTasks((items) => items.map((item, itemIndex) => itemIndex === index ? { ...item, done: !item.done } : item))} type="button" key={task.title}>
-          <span className="check">{task.done && '✓'}</span><span className="task-copy"><strong>{task.title}</strong><small>{task.note}</small></span><span className={`source-badge ${task.tone}`}>{task.source}</span>
+          <span className="check">{task.done && '✓'}</span>
+          <span className="task-copy"><strong>{task.title}</strong><small>{task.note}</small></span>
+          <span className={`source-badge ${task.tone}`}>{task.source}</span>
         </button>)}
       </div>
       <p className="connection-note">Ready for future connections to Todoist, Apple Reminders, Microsoft To Do, and Google Tasks.</p>
     </section>
 
     <section className="signals-section" aria-label="Family signals">
-      <article className="overview-card medication-card"><div className="card-heading"><span className="mini-icon sun">☀</span><h3>Medication</h3></div><button className={`medicine-row ${medicationDone ? 'complete' : ''}`} onClick={() => setMedicationDone((done) => !done)} type="button"><span className="check">{medicationDone && '✓'}</span><span><strong>Vitamin D for Jonas</strong><small>After breakfast · daily</small></span></button><p>One reminder for today</p></article>
-      <article className="overview-card"><div className="card-heading"><span className="mini-icon teal">⌁</span><h3>Routines</h3></div><div className="routine-row"><time>07:15</time><span><strong>Morning launch</strong><small>Breakfast · bags · jackets</small></span></div><div className="routine-row"><time>19:00</time><span><strong>Wind-down</strong><small>Bath · stories · lights low</small></span></div></article>
-      <article className="overview-card inbox-card"><div className="card-heading"><span className="mini-icon coral">✉</span><h3>Inbox signals</h3><span className="signal-count">2</span></div><div className="signal"><strong>Kindergarten email detected</strong><small>Bring diapers by Thursday</small></div><div className="signal"><strong>Therapy update needs review</strong><small>New appointment detail found</small></div></article>
+      <article className="overview-card medication-card">
+        <div className="card-heading"><span className="mini-icon sun">☀</span><h3>Medication</h3></div>
+        <button className={`medicine-row ${medicationDone ? 'complete' : ''}`} onClick={() => setMedicationDone((done) => !done)} type="button">
+          <span className="check">{medicationDone && '✓'}</span>
+          <span><strong>Vitamin D for Child 1</strong><small>After breakfast · daily</small></span>
+        </button>
+        <p>One reminder for today</p>
+      </article>
+
+      <article className="overview-card">
+        <div className="card-heading"><span className="mini-icon teal">⌁</span><h3>Routines</h3></div>
+        <div className="routine-row"><time>07:15</time><span><strong>Morning launch</strong><small>Breakfast · bags · jackets</small></span></div>
+        <div className="routine-row"><time>19:00</time><span><strong>Wind-down</strong><small>Bath · stories · lights low</small></span></div>
+      </article>
+
+      <article className="overview-card inbox-card">
+        <div className="card-heading"><span className="mini-icon coral">✉</span><h3>Inbox signals</h3><span className="signal-count">2</span></div>
+        <div className="signal"><strong>Kindergarten email detected</strong><small>Bring diapers by Thursday</small></div>
+        <div className="signal"><strong>Therapy update needs review</strong><small>New appointment detail found</small></div>
+      </article>
     </section>
 
     <section className="brain-dump card" aria-labelledby="dump-title">
-      <div className="brain-dump-intro"><div className="soft-icon teal">✦</div><div><p className="eyebrow">Your family brain</p><h2 id="dump-title">What’s on your mind?</h2><p>Type or speak anything on your mind. AI Family OS will organize it.</p></div></div>
-      <div className={`input-shell ${listening ? 'listening' : ''}`}><textarea value={brainDump} onChange={(event) => setBrainDump(event.target.value)} placeholder="Appointments, reminders, tiny worries…" aria-label="Brain dump" /><div className="input-actions"><button className={`voice-button ${listening ? 'active' : ''}`} onClick={() => setListening((value) => !value)} type="button" aria-pressed={listening}>◉ {listening ? 'Listening…' : 'Voice note'}</button><button className="primary-button" onClick={processDump} type="button" disabled={processing}>✦ {processing ? 'Finding the threads…' : 'Process with AI'}</button></div></div>
-      {listening && <p className="voice-hint"><span className="pulse-dot" /> Voice input is a demo concept — your thoughts are safe here.</p>}
+      <div className="brain-dump-intro">
+        <div className="soft-icon teal">✦</div>
+        <div>
+          <p className="eyebrow">Your family brain</p>
+          <h2 id="dump-title">What’s on your mind?</h2>
+          <p>Type or speak anything on your mind. AI Family OS will organize it.</p>
+        </div>
+      </div>
+
+      <div className={`input-shell ${listening ? 'listening' : ''}`}>
+        <textarea value={brainDump} onChange={(event) => setBrainDump(event.target.value)} placeholder="Tell me what’s on your mind…" aria-label="Brain dump" />
+        <div className="input-actions">
+          <button className={`voice-button ${listening ? 'active' : ''}`} onClick={toggleVoice} type="button" aria-pressed={listening}>◉ {listening ? 'Stop listening' : 'Voice note'}</button>
+          <button className="primary-button" onClick={handleProcess} type="button" disabled={processing}>✦ {processing ? 'Finding the threads…' : 'Process with AI'}</button>
+        </div>
+      </div>
+
+      {brainMessage && <p className="brain-message">{brainMessage}</p>}
     </section>
 
-    {processed && <section className="ai-result" aria-labelledby="result-title"><SectionHeading eyebrow="A calmer view" title="Here’s what I found" action={<span className="ai-badge">✦ Mock AI processing</span>} /><div className="extracted-grid">{Object.entries(extractedItems).map(([category, items]) => <article className="extract-card" key={category}><h3>{category}<span>{items.length}</span></h3><ul>{items.map((item) => <li key={item.title}><span className="item-icon">{item.icon}</span><div><strong>{item.title}</strong><small>{item.detail}</small></div></li>)}</ul></article>)}</div></section>}
+    {processedData && <section className="ai-result">
+      <SectionHeading eyebrow="A calmer view" title="Here’s what I found" action={<span className="ai-badge">✦ Mock AI processing</span>} />
+      <div className="extracted-grid">
+        {Object.entries(processedData).map(([category, items]) => <article className="extract-card" key={category}>
+          <h3>{category}<span>{items.length}</span></h3>
+          {items.length ? <ul>{items.map((item, index) => <li key={`${item.title}-${index}`}><span className="item-icon">{item.icon}</span><div><strong>{item.title}</strong><small>{item.detail}</small></div></li>)}</ul> : <p className="empty-output">Nothing found here yet.</p>}
+        </article>)}
+      </div>
+    </section>}
 
-    <section className="assistant-section card" aria-labelledby="assistant-title"><div className="assistant-intro"><div className="assistant-face">✦</div><div><p className="eyebrow">Your planning partner</p><h2 id="assistant-title">Ask your family assistant</h2><p>For the questions you don’t want to keep carrying around.</p></div></div><div className="chat-window" aria-live="polite">{chat.map((message, index) => <div className={`message ${message.role}`} key={`${message.text}-${index}`}>{message.role === 'assistant' && <span className="mini-assistant">✦</span>}<p>{message.text}</p></div>)}</div><div className="prompt-row">{Object.keys(assistantAnswers).map((prompt) => <button type="button" key={prompt} onClick={() => askAssistant(prompt)}>{prompt}</button>)}</div><form className="chat-input" onSubmit={(event) => { event.preventDefault(); askAssistant(question) }}><input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about your family’s week…" aria-label="Ask the family assistant" /><button type="submit" aria-label="Send question">↑</button></form></section>
+    <section className="assistant-section card" aria-labelledby="assistant-title">
+      <div className="assistant-intro">
+        <div className="assistant-face">✦</div>
+        <div><p className="eyebrow">Your planning partner</p><h2 id="assistant-title">Ask your family assistant</h2><p>For the questions you don’t want to keep carrying around.</p></div>
+      </div>
 
-    <section className="integrations" aria-labelledby="integrations-title"><SectionHeading eyebrow="Coming when you’re ready" title="Works with the tools you already use" /><div className="integration-grid">{[['31', 'Google Calendar'], ['◐', 'Apple Calendar'], ['O', 'Outlook Calendar'], ['M', 'Gmail'], ['✓', 'Todoist'], ['◌', 'Apple Reminders'], ['□', 'Microsoft To Do'], ['◉', 'Voice input']].map(([symbol, name]) => <article className="integration-card" key={name}><span className="integration-logo">{symbol}</span><h3>{name}</h3><small>Planned</small></article>)}</div></section>
+      <div className="chat-window" aria-live="polite">
+        {chat.map((message, index) => <div className={`message ${message.role}`} key={`${message.text}-${index}`}>{message.role === 'assistant' && <span className="mini-assistant">✦</span>}<p>{message.text}</p></div>)}
+      </div>
 
-    {calendarOpen && <div className="modal-backdrop" role="presentation" onClick={() => setCalendarOpen(false)}><section className="calendar-modal" role="dialog" aria-modal="true" aria-labelledby="month-title" onClick={(event) => event.stopPropagation()}><button className="close-button" type="button" onClick={() => setCalendarOpen(false)} aria-label="Close calendar">×</button><p className="eyebrow">Calendar preview</p><h2 id="month-title">July 2026</h2><p>This is a demo of your future shared family calendar.</p><WeekCalendar expanded /><button className="primary-button full-width" type="button" onClick={() => setCalendarOpen(false)}>Back to overview</button></section></div>}
+      <div className="prompt-row">{Object.keys(assistantAnswers).map((prompt) => <button type="button" key={prompt} onClick={() => askAssistant(prompt)}>{prompt}</button>)}</div>
+
+      <form className="chat-input" onSubmit={(event) => { event.preventDefault(); askAssistant(question) }}>
+        <input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about your family’s week…" aria-label="Ask the family assistant" />
+        <button type="submit" aria-label="Send question">↑</button>
+      </form>
+    </section>
+
+    <section className="integrations">
+      <SectionHeading eyebrow="Coming when you’re ready" title="Works with the tools you already use" />
+      <div className="integration-grid">
+        {[['31', 'Google Calendar'], ['◐', 'Apple Calendar'], ['O', 'Outlook Calendar'], ['M', 'Gmail'], ['✓', 'Todoist'], ['◌', 'Apple Reminders'], ['□', 'Microsoft To Do'], ['◉', 'Voice input']].map(([symbol, name]) => <article className="integration-card" key={name}><span className="integration-logo">{symbol}</span><h3>{name}</h3><small>Planned</small></article>)}
+      </div>
+    </section>
+
+    {memberModal && <Modal label={memberModal.mode === 'add' ? 'Add family member' : 'Edit family member'} onClose={() => setMemberModal(null)}>
+      <p className="eyebrow">My Family</p>
+      <h2>{memberModal.mode === 'add' ? 'Add a family member' : 'Edit family member'}</h2>
+      <form className="form-stack" onSubmit={saveMember}>
+        <label>First name<input required value={memberForm.firstName} onChange={(event) => setMemberForm({ ...memberForm, firstName: event.target.value })} /></label>
+        <label>Last name<input value={memberForm.lastName} onChange={(event) => setMemberForm({ ...memberForm, lastName: event.target.value })} /></label>
+        <label>Date of birth<input type="date" value={memberForm.dateOfBirth} onChange={(event) => setMemberForm({ ...memberForm, dateOfBirth: event.target.value })} /></label>
+        <label>Relationship<select value={memberForm.relationship} onChange={(event) => setMemberForm({ ...memberForm, relationship: event.target.value })}><option>Me</option><option>Partner</option><option>Child</option><option>Other</option></select></label>
+        <button className="primary-button form-submit" type="submit">Save family member</button>
+      </form>
+    </Modal>}
+
+    {calendarOpen && <Modal label="Calendar" className="calendar-modal" onClose={() => setCalendarOpen(false)}>
+      <p className="eyebrow">Calendar preview</p>
+      <div className="month-title">
+        <button type="button" onClick={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1))} aria-label="Previous month">←</button>
+        <h2>{new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(monthDate)}</h2>
+        <button type="button" onClick={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1))} aria-label="Next month">→</button>
+      </div>
+
+      <div className="month-grid">
+        <div className="month-weekdays">{weekdays.map((day) => <span key={day}>{day}</span>)}</div>
+        <div className="month-days">
+          {monthCells().map((date, index) => {
+            if (!date) return <span className="blank-day" key={`blank-${index}`} />
+
+            const iso = toIsoDate(date)
+            const dayEvents = events.filter((event) => event.date === iso)
+            const isToday = iso === toIsoDate(today)
+
+            return <button className={`month-day ${isToday ? 'today' : ''}`} type="button" onClick={() => setSelectedDay(iso)} key={iso}>
+              <strong>{date.getDate()}</strong>
+              <span className="event-dots">{dayEvents.slice(0, 4).map((event) => <i className={categoryStyles[event.category]} key={event.id} />)}</span>
+            </button>
+          })}
+        </div>
+      </div>
+
+      <p className="calendar-instruction">Tap any day to see its plans and reminders.</p>
+    </Modal>}
+
+    {selectedDay && <Modal label={`Plans for ${formatDate(selectedDay)}`} className="day-modal" onClose={() => setSelectedDay(null)}>
+      <p className="eyebrow">Day details</p>
+      <h2>{formatDate(selectedDay)}</h2>
+      <div className="day-detail-events">
+        {events.filter((event) => event.date === selectedDay).length ? events.filter((event) => event.date === selectedDay).sort((a, b) => a.startTime.localeCompare(b.startTime)).map((event) => <article className="detail-event" key={event.id}>
+          <span className={`event-dot ${categoryStyles[event.category]}`} />
+          <div>
+            <time>{event.startTime}–{event.endTime}</time>
+            <strong>{event.title}</strong>
+            <small>{event.category} · {memberName(members.find((member) => member.id === event.memberId))}</small>
+            {event.notes && <p>{event.notes}</p>}
+          </div>
+        </article>) : <p className="empty-day">Nothing planned yet. Enjoy the breathing room.</p>}
+      </div>
+      <button className="primary-button form-submit" type="button" onClick={openEventForm}>＋ Add Event</button>
+    </Modal>}
+
+    {eventModalOpen && <Modal label="Add event" onClose={() => setEventModalOpen(false)}>
+      <p className="eyebrow">Calendar</p>
+      <h2>Add an event</h2>
+      <form className="form-stack" onSubmit={saveEvent}>
+        <label>Event title<input required value={eventForm.title} onChange={(event) => setEventForm({ ...eventForm, title: event.target.value })} placeholder="e.g. Dentist appointment" /></label>
+        <div className="form-two-columns">
+          <label>Date<input required type="date" value={eventForm.date} onChange={(event) => setEventForm({ ...eventForm, date: event.target.value })} /></label>
+          <label>Family member<select value={eventForm.memberId} onChange={(event) => setEventForm({ ...eventForm, memberId: event.target.value })}>{members.map((member) => <option value={member.id} key={member.id}>{memberName(member)}</option>)}</select></label>
+        </div>
+        <div className="form-two-columns">
+          <label>Start time<input required type="time" value={eventForm.startTime} onChange={(event) => setEventForm({ ...eventForm, startTime: event.target.value })} /></label>
+          <label>End time<input required type="time" value={eventForm.endTime} onChange={(event) => setEventForm({ ...eventForm, endTime: event.target.value })} /></label>
+        </div>
+        <label>Category<select value={eventForm.category} onChange={(event) => setEventForm({ ...eventForm, category: event.target.value })}>{Object.keys(categoryStyles).map((category) => <option key={category}>{category}</option>)}</select></label>
+        <label>Notes <span>(optional)</span><textarea value={eventForm.notes} onChange={(event) => setEventForm({ ...eventForm, notes: event.target.value })} /></label>
+        <button className="primary-button form-submit" type="submit">Save event</button>
+      </form>
+    </Modal>}
 
     <footer><span className="brand-mark">✦</span> AI Family OS <i>Capture everything. Organize nothing. AI does the rest.</i></footer>
   </main>
