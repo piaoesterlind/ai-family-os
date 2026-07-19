@@ -125,6 +125,14 @@ Later versions may include:
 
 ## Development Priorities
 
+## Internationalization
+
+AI Family OS should support multiple languages in future versions.
+
+User-interface text should be separated from application logic and stored in locale files. A future implementation may use an internationalization library such as react-i18next or React Intl.
+
+The initial MVP remains English-only.
+
 1. Build a clean and attractive dashboard.
 2. Implement the Brain Dump interface.
 3. Show structured AI output.
