@@ -237,3 +237,14 @@ footer i { display:none; }
   font-size: 12px;
   font-weight: 700;
 }
+
+.calendar-event {
+  width: 100%;
+  border: 0;
+  text-align: left;
+}
+
+.calendar-event:active {
+  transform: scale(.98);
+  filter: brightness(.96);
+}
