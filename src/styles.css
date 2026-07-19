@@ -13,7 +13,7 @@
   --pale-coral: #fcede7;
   --butter: #fff4ce;
   --lilac: #eee8f5;
-  --shadow: 0 12px 36px rgba(35, 58, 54, .07);
+  --shadow: 0 12px 36px rgba(35, 58, 54, 0.07);
 }
 
 * {
@@ -58,7 +58,7 @@ main {
   color: var(--ink);
   text-decoration: none;
   font: 600 19px 'Fraunces', serif;
-  letter-spacing: -.5px;
+  letter-spacing: -0.5px;
 }
 
 .brand em {
@@ -74,7 +74,7 @@ main {
   border-radius: 9px;
   background: var(--teal);
   color: #fff;
-  font: 16px 'DM Sans';
+  font: 16px 'DM Sans', sans-serif;
 }
 
 .family-control {
@@ -227,11 +227,10 @@ main {
 .section-heading h2 {
   margin: 0;
   font: 500 26px/1.1 'Fraunces', serif;
-  letter-spacing: -.55px;
+  letter-spacing: -0.55px;
 }
 
 .calendar-section,
-.reminders-section,
 .tasks-section,
 .signals-section,
 .brain-dump,
@@ -323,15 +322,15 @@ main {
 }
 
 .calendar-event:active {
-  transform: scale(.98);
-  filter: brightness(.96);
+  transform: scale(0.98);
+  filter: brightness(0.96);
 }
 
 .calendar-event time {
   display: block;
   margin-bottom: 1px;
-  font: 9px 'DM Mono';
-  opacity: .72;
+  font: 9px 'DM Mono', monospace;
+  opacity: 0.72;
 }
 
 .calendar-event.teal {
@@ -369,87 +368,6 @@ main {
   margin: 8px 0 0;
   color: var(--muted);
   font-size: 11.5px;
-}
-
-.reminders-section {
-  margin-top: 45px;
-}
-
-.reminder-list {
-  display: grid;
-  gap: 8px;
-}
-
-.reminder-item {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 11px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: #fff;
-}
-
-.reminder-item > span {
-  color: var(--teal);
-}
-
-.reminder-item strong,
-.reminder-item small {
-  display: block;
-}
-
-.reminder-item strong {
-  font-size: 12px;
-}
-
-.reminder-item small {
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.alarm-item {
-  border-color: #edc3b8;
-  background: #fff7f3;
-}
-
-.alarm-item > span {
-  color: #b55743;
-}
-
-.notification-note {
-  margin: 8px 0 0;
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.event-notification-labels {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 5px;
-}
-
-.event-notification-labels.compact {
-  margin-top: 3px;
-}
-
-.reminder-label,
-.alarm-label {
-  padding: 2px 5px;
-  border-radius: 5px;
-  font-size: 9px;
-  font-weight: 700;
-}
-
-.reminder-label {
-  background: var(--pale-teal);
-  color: var(--teal);
-}
-
-.alarm-label {
-  background: var(--pale-coral);
-  color: #9e5949;
 }
 
 .count-pill {
@@ -657,7 +575,7 @@ main {
 
 .routine-row time {
   color: #75817f;
-  font: 10px 'DM Mono';
+  font: 10px 'DM Mono', monospace;
 }
 
 .signal {
@@ -710,7 +628,7 @@ main {
 .modal h2 {
   margin: 0;
   font: 500 24px/1.1 'Fraunces', serif;
-  letter-spacing: -.45px;
+  letter-spacing: -0.45px;
 }
 
 .brain-dump-intro > div:last-child > p:last-child,
@@ -779,7 +697,7 @@ main {
 
 .primary-button:disabled {
   cursor: wait;
-  opacity: .75;
+  opacity: 0.75;
 }
 
 .brain-message {
@@ -823,7 +741,7 @@ main {
   border-radius: 5px;
   background: #f0f2ef;
   color: #7d8886;
-  font: 10px 'DM Mono';
+  font: 10px 'DM Mono', monospace;
 }
 
 .extract-card ul {
@@ -886,10 +804,10 @@ main {
 }
 
 .message {
+  max-width: 93%;
   display: flex;
   align-items: flex-start;
   gap: 7px;
-  max-width: 93%;
 }
 
 .message p {
@@ -913,9 +831,9 @@ main {
 .mini-assistant {
   width: 21px;
   height: 21px;
+  flex: none;
   display: grid;
   place-items: center;
-  flex: none;
   border-radius: 7px;
   background: var(--pale-teal);
   color: var(--teal);
@@ -1006,7 +924,7 @@ main {
   color: #a2aaa8;
   font-size: 8px;
   font-weight: 700;
-  letter-spacing: .7px;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
 }
 
@@ -1086,39 +1004,6 @@ main {
   margin-top: 4px;
 }
 
-.notification-settings {
-  display: grid;
-  gap: 7px;
-  margin: 0;
-  padding: 11px;
-  border: 1px solid #dce5e0;
-  border-radius: 10px;
-}
-
-.notification-settings legend {
-  color: var(--ink);
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.notification-settings p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.notification-choice {
-  display: flex !important;
-  grid-template-columns: none !important;
-  align-items: center;
-  gap: 8px;
-  font-weight: 400 !important;
-}
-
-.notification-choice input {
-  width: auto !important;
-}
-
 .month-title {
   display: flex;
   align-items: center;
@@ -1191,10 +1076,10 @@ main {
 }
 
 .event-dots {
+  min-height: 8px;
   display: flex;
   justify-content: center;
   gap: 3px;
-  min-height: 8px;
   margin-top: 4px;
 }
 
@@ -1255,7 +1140,7 @@ main {
 }
 
 .detail-event:last-child {
-  border: 0;
+  border-bottom: 0;
 }
 
 .detail-event:active {
@@ -1275,7 +1160,7 @@ main {
 
 .detail-event time {
   color: #75817f;
-  font: 10px 'DM Mono';
+  font: 10px 'DM Mono', monospace;
 }
 
 .detail-event strong {
@@ -1310,6 +1195,147 @@ main {
   color: #a55d4c;
   font-size: 12px;
   font-weight: 700;
+}
+
+.reminders-section {
+  margin-top: 45px;
+}
+
+.reminder-list {
+  display: grid;
+  gap: 8px;
+}
+
+.reminder-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.reminder-item > span {
+  color: var(--teal);
+}
+
+.reminder-item strong,
+.reminder-item small {
+  display: block;
+}
+
+.reminder-item strong {
+  font-size: 12px;
+}
+
+.reminder-item small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.alarm-item {
+  border-color: #edc3b8;
+  background: #fff7f3;
+}
+
+.alarm-item > span {
+  color: #b55743;
+}
+
+.notification-note {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.event-notification-labels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.event-notification-labels.compact {
+  margin-top: 3px;
+}
+
+.reminder-label,
+.alarm-label {
+  padding: 2px 5px;
+  border-radius: 5px;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.reminder-label {
+  background: var(--pale-teal);
+  color: var(--teal);
+}
+
+.alarm-label {
+  background: var(--pale-coral);
+  color: #9e5949;
+}
+
+.notification-settings {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 11px;
+  border: 1px solid #dce5e0;
+  border-radius: 10px;
+}
+
+.notification-settings legend {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.notification-settings p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.notification-choice {
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400 !important;
+}
+
+.notification-choice input {
+  width: auto !important;
+}
+
+.custom-reminder {
+  display: grid;
+  grid-template-columns: 70px 1fr auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.custom-reminder input,
+.custom-reminder select {
+  min-width: 0;
+}
+
+.custom-reminder button,
+.add-reminder {
+  padding: 8px;
+  border: 1px solid #d6ded9;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--teal);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.add-reminder {
+  width: 100%;
 }
 
 footer {
@@ -1402,7 +1428,6 @@ footer i {
   }
 
   .calendar-section,
-  .reminders-section,
   .tasks-section,
   .signals-section,
   .brain-dump,
@@ -1449,6 +1474,6 @@ footer i {
   footer i {
     display: block;
     margin-left: auto;
-    font: 12px 'Fraunces';
+    font: 12px 'Fraunces', serif;
   }
 }
