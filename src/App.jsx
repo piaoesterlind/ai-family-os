@@ -10,6 +10,36 @@ const demoDate = (offset) => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
 
+const nextWeekdayOffset = (startOffset = 0) => {
+  let offset = startOffset
+
+  while ([0, 6].includes(new Date(today.getFullYear(), today.getMonth(), today.getDate() + offset).getDay())) {
+    offset += 1
+  }
+
+  return offset
+}
+
+const nextDayOffset = (dayOfWeek) => (dayOfWeek - today.getDay() + 7) % 7
+const kindergartenOffset = nextWeekdayOffset()
+const therapyOffset = nextWeekdayOffset(kindergartenOffset + 1)
+const appointmentOffset = nextWeekdayOffset(therapyOffset + 1)
+const preparationOffset = nextWeekdayOffset(appointmentOffset + 1)
+
+const reminderOptions = [
+  '1 day before',
+  '1 hour before',
+  '15 minutes before',
+  '5 minutes before',
+]
+
+const alarmOptions = [
+  'No alarm',
+  'At event time',
+  '5 minutes before',
+  '15 minutes before',
+]
+
 const initialMembers = [
   { id: 'me', firstName: 'Me', lastName: '', dateOfBirth: '', relationship: 'Me' },
   { id: 'child-1', firstName: 'Child 1', lastName: '', dateOfBirth: '', relationship: 'Child' },
@@ -17,14 +47,102 @@ const initialMembers = [
 ]
 
 const initialEvents = [
-  { id: 'event-1', date: demoDate(0), startTime: '07:45', endTime: '08:15', title: 'Kindergarten', category: 'School', memberId: 'child-1', notes: 'Drop-off at the main entrance.' },
-  { id: 'event-2', date: demoDate(0), startTime: '08:00', endTime: '08:05', title: 'Vitamin D reminder', category: 'Medication', memberId: 'child-1', notes: 'After breakfast.' },
-  { id: 'event-3', date: demoDate(1), startTime: '16:00', endTime: '17:00', title: 'Speech therapy', category: 'Therapy', memberId: 'child-2', notes: 'Bring therapy bag.' },
-  { id: 'event-4', date: demoDate(2), startTime: '10:00', endTime: '10:45', title: 'Pediatrician appointment', category: 'Appointment', memberId: 'child-1', notes: 'Location to be confirmed.' },
-  { id: 'event-5', date: demoDate(3), startTime: '08:00', endTime: '08:10', title: 'Bring diapers', category: 'Reminder', memberId: 'child-1', notes: 'Leave them by the front door.' },
-  { id: 'event-6', date: demoDate(3), startTime: '19:30', endTime: '19:45', title: 'Pack therapy bag', category: 'Reminder', memberId: 'child-2', notes: 'Prepare it for tomorrow.' },
-  { id: 'event-7', date: demoDate(5), startTime: '10:30', endTime: '11:30', title: 'Family walk', category: 'Reminder', memberId: 'me', notes: 'Park or forest trail, weather permitting.' },
-  { id: 'event-8', date: demoDate(6), startTime: '18:30', endTime: '19:00', title: 'Plan the week', category: 'Reminder', memberId: 'me', notes: 'Review calendar, bags, meals, and school notes.' },
+  {
+    id: 'event-1',
+    date: demoDate(kindergartenOffset),
+    startTime: '07:45',
+    endTime: '08:15',
+    title: 'Kindergarten',
+    category: 'School',
+    memberId: 'child-1',
+    notes: 'Drop-off at the main entrance.',
+    reminders: ['15 minutes before'],
+    alarm: 'No alarm',
+  },
+  {
+    id: 'event-2',
+    date: demoDate(0),
+    startTime: '08:00',
+    endTime: '08:05',
+    title: 'Vitamin D reminder',
+    category: 'Medication',
+    memberId: 'child-1',
+    notes: 'After breakfast.',
+    reminders: ['1 hour before'],
+    alarm: 'At event time',
+  },
+  {
+    id: 'event-3',
+    date: demoDate(therapyOffset),
+    startTime: '16:00',
+    endTime: '17:00',
+    title: 'Speech therapy',
+    category: 'Therapy',
+    memberId: 'child-2',
+    notes: 'Bring therapy bag.',
+    reminders: ['1 day before', '1 hour before'],
+    alarm: '5 minutes before',
+  },
+  {
+    id: 'event-4',
+    date: demoDate(appointmentOffset),
+    startTime: '10:00',
+    endTime: '10:45',
+    title: 'Pediatrician appointment',
+    category: 'Appointment',
+    memberId: 'child-1',
+    notes: 'Location to be confirmed.',
+    reminders: ['1 day before'],
+    alarm: '15 minutes before',
+  },
+  {
+    id: 'event-5',
+    date: demoDate(preparationOffset),
+    startTime: '08:00',
+    endTime: '08:10',
+    title: 'Bring diapers',
+    category: 'Reminder',
+    memberId: 'child-1',
+    notes: 'Leave them by the front door.',
+    reminders: ['1 day before'],
+    alarm: 'No alarm',
+  },
+  {
+    id: 'event-6',
+    date: demoDate(preparationOffset),
+    startTime: '19:30',
+    endTime: '19:45',
+    title: 'Pack therapy bag',
+    category: 'Reminder',
+    memberId: 'child-2',
+    notes: 'Prepare it for tomorrow.',
+    reminders: ['1 day before'],
+    alarm: 'No alarm',
+  },
+  {
+    id: 'event-7',
+    date: demoDate(nextDayOffset(6)),
+    startTime: '10:30',
+    endTime: '11:30',
+    title: 'Family walk',
+    category: 'Reminder',
+    memberId: 'me',
+    notes: 'Park or forest trail, weather permitting.',
+    reminders: [],
+    alarm: 'No alarm',
+  },
+  {
+    id: 'event-8',
+    date: demoDate(nextDayOffset(0)),
+    startTime: '18:30',
+    endTime: '19:00',
+    title: 'Plan the week',
+    category: 'Reminder',
+    memberId: 'me',
+    notes: 'Review calendar, bags, meals, and school notes.',
+    reminders: ['1 hour before'],
+    alarm: 'No alarm',
+  },
 ]
 
 const initialTasks = [
@@ -40,7 +158,14 @@ const assistantAnswers = {
   'Are there any conflicts this week?': 'No conflicts found in this demo. Thursday has both kindergarten errands and speech therapy, so I would prepare the therapy bag on Wednesday evening.',
 }
 
-const categoryStyles = { School: 'teal', Therapy: 'lilac', Appointment: 'coral', Medication: 'sun', Reminder: 'sand' }
+const categoryStyles = {
+  School: 'teal',
+  Therapy: 'lilac',
+  Appointment: 'coral',
+  Medication: 'sun',
+  Reminder: 'sand',
+}
+
 const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const emptyMember = { firstName: '', lastName: '', dateOfBirth: '', relationship: 'Child' }
 
@@ -58,7 +183,13 @@ function memberName(member) {
 
 function processBrainDump(text) {
   const lines = text.split(/[.!?\n]+/).map((line) => line.trim()).filter(Boolean)
-  const result = { Appointments: [], Tasks: [], Medications: [], Routines: [], 'Follow-up questions': [] }
+  const result = {
+    Appointments: [],
+    Tasks: [],
+    Medications: [],
+    Routines: [],
+    'Follow-up questions': [],
+  }
 
   lines.forEach((line) => {
     const lower = line.toLowerCase()
@@ -66,35 +197,93 @@ function processBrainDump(text) {
 
     if (/(appointment|therapy|doctor|pediatrician|dentist|meeting|visit)/.test(lower)) {
       result.Appointments.push({ title: line, detail, icon: '🗓' })
-      if (detail === 'When should this happen?') result['Follow-up questions'].push({ title: 'When is this appointment?', detail: line, icon: '?' })
+
+      if (detail === 'When should this happen?') {
+        result['Follow-up questions'].push({
+          title: 'When is this appointment?',
+          detail: line,
+          icon: '?',
+        })
+      }
     }
-    if (/(remind|remember|bring|pack|buy|order|pick up|call|reply|send)/.test(lower)) result.Tasks.push({ title: line, detail, icon: '✓' })
-    if (/(vitamin|medication|medicine|dose|tablet|prescription)/.test(lower)) result.Medications.push({ title: line, detail: 'Check timing and dosage', icon: '💛' })
-    if (/(every |daily|routine|morning|evening|bedtime|after breakfast)/.test(lower)) result.Routines.push({ title: line, detail: 'Recurring family rhythm', icon: '⌁' })
+
+    if (/(remind|remember|bring|pack|buy|order|pick up|call|reply|send)/.test(lower)) {
+      result.Tasks.push({ title: line, detail, icon: '✓' })
+    }
+
+    if (/(vitamin|medication|medicine|dose|tablet|prescription)/.test(lower)) {
+      result.Medications.push({ title: line, detail: 'Check timing and dosage', icon: '💛' })
+    }
+
+    if (/(every |daily|routine|morning|evening|bedtime|after breakfast)/.test(lower)) {
+      result.Routines.push({ title: line, detail: 'Recurring family rhythm', icon: '⌁' })
+    }
   })
 
   if (!result.Appointments.length && !result.Tasks.length && !result.Medications.length && !result.Routines.length) {
-    result.Tasks.push({ title: text.trim(), detail: 'Captured for your family plan', icon: '✦' })
+    result.Tasks.push({
+      title: text.trim(),
+      detail: 'Captured for your family plan',
+      icon: '✦',
+    })
   }
 
   if (!result['Follow-up questions'].length && /(?:need|should|remember)/i.test(text)) {
-    result['Follow-up questions'].push({ title: 'Who is this for?', detail: 'Add a family member when you are ready.', icon: '?' })
+    result['Follow-up questions'].push({
+      title: 'Who is this for?',
+      detail: 'Add a family member when you are ready.',
+      icon: '?',
+    })
   }
 
   return result
 }
 
 function SectionHeading({ eyebrow, title, action }) {
-  return <div className="section-heading"><div>{eyebrow && <p className="eyebrow">{eyebrow}</p>}<h2>{title}</h2></div>{action}</div>
+  return (
+    <div className="section-heading">
+      <div>
+        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
+        <h2>{title}</h2>
+      </div>
+      {action}
+    </div>
+  )
 }
 
 function Modal({ children, label, onClose, className = '' }) {
-  return <div className="modal-backdrop" role="presentation" onClick={onClose}>
-    <section className={`modal ${className}`} role="dialog" aria-modal="true" aria-label={label} onClick={(event) => event.stopPropagation()}>
-      <button className="close-button" type="button" onClick={onClose} aria-label="Close">×</button>
-      {children}
-    </section>
-  </div>
+  return (
+    <div className="modal-backdrop" role="presentation" onClick={onClose}>
+      <section
+        className={`modal ${className}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label={label}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <button className="close-button" type="button" onClick={onClose} aria-label="Close">×</button>
+        {children}
+      </section>
+    </div>
+  )
+}
+
+function EventNotificationLabels({ event, compact = false }) {
+  const reminderCount = event.reminders?.length || 0
+  const hasAlarm = event.alarm && event.alarm !== 'No alarm'
+
+  if (!reminderCount && !hasAlarm) return null
+
+  return (
+    <span className={`event-notification-labels ${compact ? 'compact' : ''}`}>
+      {reminderCount > 0 && (
+        <span className="reminder-label">
+          ◌ {reminderCount} reminder{reminderCount > 1 ? 's' : ''}
+        </span>
+      )}
+      {hasAlarm && <span className="alarm-label">◉ Alarm on</span>}
+    </span>
+  )
 }
 
 function App() {
@@ -110,6 +299,7 @@ function App() {
   const [selectedDay, setSelectedDay] = useState(null)
   const [eventModalOpen, setEventModalOpen] = useState(false)
   const [editingEventId, setEditingEventId] = useState(null)
+
   const [eventForm, setEventForm] = useState({
     title: '',
     date: toIsoDate(today),
@@ -118,6 +308,8 @@ function App() {
     category: 'Appointment',
     memberId: 'me',
     notes: '',
+    reminders: [],
+    alarm: 'No alarm',
   })
 
   const [tasks, setTasks] = useState(initialTasks)
@@ -131,7 +323,9 @@ function App() {
   const recognitionRef = useRef(null)
 
   const [question, setQuestion] = useState('')
-  const [chat, setChat] = useState([{ role: 'assistant', text: 'Hi — I’m here to make the day feel lighter. What would you like to plan?' }])
+  const [chat, setChat] = useState([
+    { role: 'assistant', text: 'Hi — I’m here to make the day feel lighter. What would you like to plan?' },
+  ])
 
   const selectedMember = members.find((member) => member.id === selectedMemberId) || members[0]
 
@@ -152,12 +346,14 @@ function App() {
 
   const openMemberModal = (mode, member = null) => {
     setMemberModal({ mode, memberId: member?.id })
+
     setMemberForm(member ? {
       firstName: member.firstName,
       lastName: member.lastName,
       dateOfBirth: member.dateOfBirth,
       relationship: member.relationship,
     } : emptyMember)
+
     setFamilyMenuOpen(false)
   }
 
@@ -170,7 +366,12 @@ function App() {
         ? { ...item, ...memberForm, firstName: memberForm.firstName.trim() }
         : item))
     } else {
-      const member = { id: `member-${Date.now()}`, ...memberForm, firstName: memberForm.firstName.trim() }
+      const member = {
+        id: `member-${Date.now()}`,
+        ...memberForm,
+        firstName: memberForm.firstName.trim(),
+      }
+
       setMembers((items) => [...items, member])
       setSelectedMemberId(member.id)
     }
@@ -213,7 +414,9 @@ function App() {
       }
     }
 
-    recognition.onerror = () => setBrainMessage('Voice input could not capture your speech. Please try again or type your thought.')
+    recognition.onerror = () => {
+      setBrainMessage('Voice input could not capture your speech. Please try again or type your thought.')
+    }
 
     recognition.onend = () => {
       setListening(false)
@@ -252,7 +455,10 @@ function App() {
     const offset = (firstDay.getDay() + 6) % 7
     const days = new Date(year, month + 1, 0).getDate()
 
-    return [...Array(offset).fill(null), ...Array.from({ length: days }, (_, index) => new Date(year, month, index + 1))]
+    return [
+      ...Array(offset).fill(null),
+      ...Array.from({ length: days }, (_, index) => new Date(year, month, index + 1)),
+    ]
   }
 
   const openEventForm = () => {
@@ -264,7 +470,10 @@ function App() {
       category: 'Appointment',
       memberId: selectedMemberId,
       notes: '',
+      reminders: [],
+      alarm: 'No alarm',
     })
+
     setEditingEventId(null)
     setEventModalOpen(true)
   }
@@ -278,7 +487,10 @@ function App() {
       category: event.category,
       memberId: event.memberId,
       notes: event.notes,
+      reminders: event.reminders || [],
+      alarm: event.alarm || 'No alarm',
     })
+
     setEditingEventId(event.id)
     setEventModalOpen(true)
   }
@@ -292,11 +504,14 @@ function App() {
         ? { ...item, ...eventForm, title: eventForm.title.trim() }
         : item))
     } else {
-      setEvents((items) => [...items, {
-        ...eventForm,
-        id: `event-${Date.now()}`,
-        title: eventForm.title.trim(),
-      }])
+      setEvents((items) => [
+        ...items,
+        {
+          ...eventForm,
+          id: `event-${Date.now()}`,
+          title: eventForm.title.trim(),
+        },
+      ])
     }
 
     setSelectedDay(eventForm.date)
@@ -316,17 +531,21 @@ function App() {
     const cleaned = prompt.trim()
     if (!cleaned) return
 
-    const answer = assistantAnswers[cleaned] || 'I’ve added that thought to our planning view. In a connected version, I would check family routines and calendars for the best next step.'
-    setChat((messages) => [...messages, { role: 'user', text: cleaned }, { role: 'assistant', text: answer }])
+    const answer = assistantAnswers[cleaned]
+      || 'I’ve added that thought to our planning view. In a connected version, I would check family routines and calendars for the best next step.'
+
+    setChat((messages) => [
+      ...messages,
+      { role: 'user', text: cleaned },
+      { role: 'assistant', text: answer },
+    ])
+
     setQuestion('')
   }
 
   return <main>
     <nav className="topbar">
-      <a className="brand" href="#top" aria-label="AI Family OS home">
-        <span className="brand-mark">✦</span>
-        <span>AI Family <em>OS</em></span>
-      </a>
+      <a className="brand" href="#top" aria-label="AI Family OS home"><span className="brand-mark">✦</span><span>AI Family <em>OS</em></span></a>
 
       <div className="family-control">
         <button className="family-button" type="button" onClick={() => setFamilyMenuOpen((value) => !value)} aria-expanded={familyMenuOpen}>
@@ -341,10 +560,8 @@ function App() {
               <span className="member-dot">{member.firstName.slice(0, 1)}</span>
               <span><strong>{memberName(member)}</strong><small>{member.relationship}</small></span>
             </button>
-
             <button className="edit-member" type="button" onClick={() => openMemberModal('edit', member)} aria-label={`Edit ${memberName(member)}`}>✎</button>
           </div>)}
-
           <button className="add-member-button" type="button" onClick={() => openMemberModal('add')}>＋ Add Family Member</button>
         </div>}
       </div>
@@ -357,25 +574,34 @@ function App() {
     </section>
 
     <section className="calendar-section">
-      <SectionHeading
-        eyebrow="The next seven days"
-        title="What’s coming up"
-        action={<button className="outline-button" type="button" onClick={() => setCalendarOpen(true)}>Open Calendar <span>→</span></button>}
-      />
+      <SectionHeading eyebrow="The next seven days" title="What’s coming up" action={<button className="outline-button" type="button" onClick={() => setCalendarOpen(true)}>Open Calendar <span>→</span></button>} />
 
       <div className="weekly-calendar">
         {week.map((day, index) => <article className={`day-card ${index === 0 ? 'today' : ''}`} key={day.iso}>
           <header><span>{day.day}</span><strong>{day.date}</strong></header>
-
           <div className="day-events">
-            {day.events.length
-              ? day.events.map((event) => <div className={`calendar-event ${categoryStyles[event.category]}`} key={event.id}><time>{event.startTime}</time><span>{event.title}</span></div>)
-              : <span className="clear-day">A quiet day</span>}
+            {day.events.length ? day.events.map((event) => <button className={`calendar-event ${categoryStyles[event.category]}`} type="button" onClick={() => openEditEvent(event)} key={event.id}>
+              <time>{event.startTime}</time>
+              <span>{event.title}</span>
+              <EventNotificationLabels event={event} compact />
+            </button>) : <span className="clear-day">A quiet day</span>}
           </div>
         </article>)}
       </div>
 
       <p className="calendar-note">A gentle view of the plans and routines that matter most.</p>
+    </section>
+
+    <section className="reminders-section">
+      <SectionHeading eyebrow="A gentle heads-up" title="Today’s Reminders & Alarms" />
+
+      <div className="reminder-list">
+        <article className="reminder-item"><span>◌</span><div><strong>Reminder: Pack therapy bag</strong><small>1 day before</small></div></article>
+        <article className="reminder-item"><span>◌</span><div><strong>Reminder: Speech therapy</strong><small>1 hour before</small></div></article>
+        <article className="reminder-item alarm-item"><span>◉</span><div><strong>Alarm: Speech therapy</strong><small>5 minutes before</small></div></article>
+      </div>
+
+      <p className="notification-note">Real push notifications planned for a future version.</p>
     </section>
 
     <section className="tasks-section">
@@ -395,10 +621,7 @@ function App() {
     <section className="signals-section" aria-label="Family signals">
       <article className="overview-card medication-card">
         <div className="card-heading"><span className="mini-icon sun">☀</span><h3>Medication</h3></div>
-        <button className={`medicine-row ${medicationDone ? 'complete' : ''}`} onClick={() => setMedicationDone((done) => !done)} type="button">
-          <span className="check">{medicationDone && '✓'}</span>
-          <span><strong>Vitamin D for Child 1</strong><small>After breakfast · daily</small></span>
-        </button>
+        <button className={`medicine-row ${medicationDone ? 'complete' : ''}`} onClick={() => setMedicationDone((done) => !done)} type="button"><span className="check">{medicationDone && '✓'}</span><span><strong>Vitamin D for Child 1</strong><small>After breakfast · daily</small></span></button>
         <p>One reminder for today</p>
       </article>
 
@@ -418,16 +641,11 @@ function App() {
     <section className="brain-dump card" aria-labelledby="dump-title">
       <div className="brain-dump-intro">
         <div className="soft-icon teal">✦</div>
-        <div>
-          <p className="eyebrow">Your family brain</p>
-          <h2 id="dump-title">What’s on your mind?</h2>
-          <p>Type or speak anything on your mind. AI Family OS will organize it.</p>
-        </div>
+        <div><p className="eyebrow">Your family brain</p><h2 id="dump-title">What’s on your mind?</h2><p>Type or speak anything on your mind. AI Family OS will organize it.</p></div>
       </div>
 
       <div className={`input-shell ${listening ? 'listening' : ''}`}>
         <textarea value={brainDump} onChange={(event) => setBrainDump(event.target.value)} placeholder="Tell me what’s on your mind…" aria-label="Brain dump" />
-
         <div className="input-actions">
           <button className={`voice-button ${listening ? 'active' : ''}`} onClick={toggleVoice} type="button" aria-pressed={listening}>◉ {listening ? 'Stop listening' : 'Voice note'}</button>
           <button className="primary-button" onClick={handleProcess} type="button" disabled={processing}>✦ {processing ? 'Finding the threads…' : 'Process with AI'}</button>
@@ -439,33 +657,19 @@ function App() {
 
     {processedData && <section className="ai-result">
       <SectionHeading eyebrow="A calmer view" title="Here’s what I found" action={<span className="ai-badge">✦ Mock AI processing</span>} />
-
       <div className="extracted-grid">
         {Object.entries(processedData).map(([category, items]) => <article className="extract-card" key={category}>
           <h3>{category}<span>{items.length}</span></h3>
-          {items.length
-            ? <ul>{items.map((item, index) => <li key={`${item.title}-${index}`}><span className="item-icon">{item.icon}</span><div><strong>{item.title}</strong><small>{item.detail}</small></div></li>)}</ul>
-            : <p className="empty-output">Nothing found here yet.</p>}
+          {items.length ? <ul>{items.map((item, index) => <li key={`${item.title}-${index}`}><span className="item-icon">{item.icon}</span><div><strong>{item.title}</strong><small>{item.detail}</small></div></li>)}</ul> : <p className="empty-output">Nothing found here yet.</p>}
         </article>)}
       </div>
     </section>}
 
     <section className="assistant-section card" aria-labelledby="assistant-title">
-      <div className="assistant-intro">
-        <div className="assistant-face">✦</div>
-        <div><p className="eyebrow">Your planning partner</p><h2 id="assistant-title">Ask your family assistant</h2><p>For the questions you don’t want to keep carrying around.</p></div>
-      </div>
-
-      <div className="chat-window" aria-live="polite">
-        {chat.map((message, index) => <div className={`message ${message.role}`} key={`${message.text}-${index}`}>{message.role === 'assistant' && <span className="mini-assistant">✦</span>}<p>{message.text}</p></div>)}
-      </div>
-
+      <div className="assistant-intro"><div className="assistant-face">✦</div><div><p className="eyebrow">Your planning partner</p><h2 id="assistant-title">Ask your family assistant</h2><p>For the questions you don’t want to keep carrying around.</p></div></div>
+      <div className="chat-window" aria-live="polite">{chat.map((message, index) => <div className={`message ${message.role}`} key={`${message.text}-${index}`}>{message.role === 'assistant' && <span className="mini-assistant">✦</span>}<p>{message.text}</p></div>)}</div>
       <div className="prompt-row">{Object.keys(assistantAnswers).map((prompt) => <button type="button" key={prompt} onClick={() => askAssistant(prompt)}>{prompt}</button>)}</div>
-
-      <form className="chat-input" onSubmit={(event) => { event.preventDefault(); askAssistant(question) }}>
-        <input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about your family’s week…" aria-label="Ask the family assistant" />
-        <button type="submit" aria-label="Send question">↑</button>
-      </form>
+      <form className="chat-input" onSubmit={(event) => { event.preventDefault(); askAssistant(question) }}><input value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Ask about your family’s week…" aria-label="Ask the family assistant" /><button type="submit" aria-label="Send question">↑</button></form>
     </section>
 
     <section className="integrations">
@@ -478,7 +682,6 @@ function App() {
     {memberModal && <Modal label={memberModal.mode === 'add' ? 'Add family member' : 'Edit family member'} onClose={() => setMemberModal(null)}>
       <p className="eyebrow">My Family</p>
       <h2>{memberModal.mode === 'add' ? 'Add a family member' : 'Edit family member'}</h2>
-
       <form className="form-stack" onSubmit={saveMember}>
         <label>First name<input required value={memberForm.firstName} onChange={(event) => setMemberForm({ ...memberForm, firstName: event.target.value })} /></label>
         <label>Last name<input value={memberForm.lastName} onChange={(event) => setMemberForm({ ...memberForm, lastName: event.target.value })} /></label>
@@ -490,7 +693,6 @@ function App() {
 
     {calendarOpen && <Modal label="Calendar" className="calendar-modal" onClose={() => setCalendarOpen(false)}>
       <p className="eyebrow">Calendar preview</p>
-
       <div className="month-title">
         <button type="button" onClick={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1))} aria-label="Previous month">←</button>
         <h2>{new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(monthDate)}</h2>
@@ -499,21 +701,18 @@ function App() {
 
       <div className="month-grid">
         <div className="month-weekdays">{weekdays.map((day) => <span key={day}>{day}</span>)}</div>
+        <div className="month-days">{monthCells().map((date, index) => {
+          if (!date) return <span className="blank-day" key={`blank-${index}`} />
 
-        <div className="month-days">
-          {monthCells().map((date, index) => {
-            if (!date) return <span className="blank-day" key={`blank-${index}`} />
+          const iso = toIsoDate(date)
+          const dayEvents = events.filter((event) => event.date === iso)
+          const isToday = iso === toIsoDate(today)
 
-            const iso = toIsoDate(date)
-            const dayEvents = events.filter((event) => event.date === iso)
-            const isToday = iso === toIsoDate(today)
-
-            return <button className={`month-day ${isToday ? 'today' : ''}`} type="button" onClick={() => setSelectedDay(iso)} key={iso}>
-              <strong>{date.getDate()}</strong>
-              <span className="event-dots">{dayEvents.slice(0, 4).map((event) => <i className={categoryStyles[event.category]} key={event.id} />)}</span>
-            </button>
-          })}
-        </div>
+          return <button className={`month-day ${isToday ? 'today' : ''}`} type="button" onClick={() => setSelectedDay(iso)} key={iso}>
+            <strong>{date.getDate()}</strong>
+            <span className="event-dots">{dayEvents.slice(0, 4).map((event) => <i className={categoryStyles[event.category]} key={event.id} />)}</span>
+          </button>
+        })}</div>
       </div>
 
       <p className="calendar-instruction">Tap any day to see its plans and reminders.</p>
@@ -524,17 +723,16 @@ function App() {
       <h2>{formatDate(selectedDay)}</h2>
 
       <div className="day-detail-events">
-        {events.filter((event) => event.date === selectedDay).length
-          ? events.filter((event) => event.date === selectedDay).sort((a, b) => a.startTime.localeCompare(b.startTime)).map((event) => <button className="detail-event" type="button" onClick={() => openEditEvent(event)} key={event.id}>
-            <span className={`event-dot ${categoryStyles[event.category]}`} />
-            <div>
-              <time>{event.startTime}–{event.endTime}</time>
-              <strong>{event.title}</strong>
-              <small>{event.category} · {memberName(members.find((member) => member.id === event.memberId))}</small>
-              {event.notes && <p>{event.notes}</p>}
-            </div>
-          </button>)
-          : <p className="empty-day">Nothing planned yet. Enjoy the breathing room.</p>}
+        {events.filter((event) => event.date === selectedDay).length ? events.filter((event) => event.date === selectedDay).sort((a, b) => a.startTime.localeCompare(b.startTime)).map((event) => <button className="detail-event" type="button" onClick={() => openEditEvent(event)} key={event.id}>
+          <span className={`event-dot ${categoryStyles[event.category]}`} />
+          <div>
+            <time>{event.startTime}–{event.endTime}</time>
+            <strong>{event.title}</strong>
+            <small>{event.category} · {memberName(members.find((member) => member.id === event.memberId))}</small>
+            <EventNotificationLabels event={event} />
+            {event.notes && <p>{event.notes}</p>}
+          </div>
+        </button>) : <p className="empty-day">Nothing planned yet. Enjoy the breathing room.</p>}
       </div>
 
       <button className="primary-button form-submit" type="button" onClick={openEventForm}>＋ Add Event</button>
@@ -559,6 +757,32 @@ function App() {
 
         <label>Category<select value={eventForm.category} onChange={(event) => setEventForm({ ...eventForm, category: event.target.value })}>{Object.keys(categoryStyles).map((category) => <option key={category}>{category}</option>)}</select></label>
         <label>Notes <span>(optional)</span><textarea value={eventForm.notes} onChange={(event) => setEventForm({ ...eventForm, notes: event.target.value })} /></label>
+
+        <fieldset className="notification-settings">
+          <legend>Reminders</legend>
+          <p>Reminders help you prepare. The alarm is the final alert when it is time to act.</p>
+
+          {reminderOptions.map((option) => <label className="notification-choice" key={option}>
+            <input
+              type="checkbox"
+              checked={eventForm.reminders.includes(option)}
+              onChange={() => setEventForm((value) => ({
+                ...value,
+                reminders: value.reminders.includes(option)
+                  ? value.reminders.filter((item) => item !== option)
+                  : [...value.reminders, option],
+              }))}
+            />
+            {option}
+          </label>)}
+        </fieldset>
+
+        <fieldset className="notification-settings">
+          <legend>Final Alarm</legend>
+          <select value={eventForm.alarm} onChange={(event) => setEventForm({ ...eventForm, alarm: event.target.value })}>
+            {alarmOptions.map((option) => <option key={option}>{option}</option>)}
+          </select>
+        </fieldset>
 
         <button className="primary-button form-submit" type="submit">{editingEventId ? 'Save changes' : 'Save event'}</button>
         {editingEventId && <button className="delete-button" type="button" onClick={deleteEvent}>Delete Event</button>}
