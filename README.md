@@ -2,63 +2,135 @@
 
 **Capture everything. Organize nothing. AI does the rest.**
 
-AI Family OS helps families reduce the mental load of everyday life by intelligently managing appointments, tasks, medications, and routines.
+AI Family OS is a mobile-first family organization prototype designed to reduce the mental load of everyday life.
 
-## Overview
+Families often manage appointments, tasks, medications, routines, school information, therapy schedules, and important messages across several different apps. AI Family OS brings these areas together in one calm and structured overview.
 
-Modern family life requires parents to keep track of many things at the same time: appointments, tasks, medication schedules, routines, school or kindergarten information, emails, therapy sessions, and unexpected changes.
+## Problem
 
-AI Family OS is designed as an AI-powered second brain for families. Instead of manually organizing everything across different apps, users can capture information quickly and let the AI assistant help structure it.
+Modern family life creates a constant mental load.
 
-## Core Idea
+Parents and caregivers often have to remember:
 
-The core idea is simple:
+- appointments
+- school and kindergarten information
+- therapy sessions
+- medications
+- routines
+- household tasks
+- important emails
+- preparation steps
+- last-minute changes
 
-1. Capture information through a brain dump, chat, or voice input.
-2. Let AI identify tasks, appointments, reminders, medications, and routines.
-3. Show families a clear daily overview of what matters.
-4. Ask follow-up questions only when important information is missing.
+This information is often spread across calendars, email inboxes, task apps, paper notes, and memory.
 
-## Planned MVP Features
+## Solution
 
-- Brain dump for quickly capturing information
-- AI processing of appointments, tasks, reminders, medications, and routines
-- Daily dashboard with today’s most important items
-- AI assistant for natural-language planning questions
-- Calendar integration concept for Google Calendar, Apple Calendar, or Outlook
+AI Family OS is designed as an intelligent second brain for families.
 
-## Example Use Cases
+The main idea is simple:
 
-- "Jonas has a pediatrician appointment next Tuesday at 10."
-- "Remind me to bring diapers to kindergarten on Thursday."
-- "Mansur has speech therapy every Thursday afternoon."
-- "What do I need to prepare for tomorrow?"
-- "Do we have any conflicts this week?"
+1. Capture information quickly through a Brain Dump, chat, or voice input.
+2. Let the system identify appointments, tasks, medications, routines, and missing information.
+3. Show families one clear overview of what matters.
+4. Connect with the tools families already use instead of replacing them.
 
-## Project Status
+## Current MVP Features
 
-This project is currently in the planning and early development phase.
+The current prototype includes:
 
-The first goal is to build a working MVP for the OpenAI Build Week hackathon and continue improving it as a long-term portfolio project.
+- family member profiles
+- seven-day calendar overview
+- monthly calendar view
+- event creation
+- event editing
+- event deletion
+- assignment of events to family members
+- multiple custom reminders
+- separate final urgent alarm
+- task overview
+- task source labels
+- medication section
+- routines section
+- inbox signal examples
+- Brain Dump input
+- local mock processing of Brain Dump content
+- browser-based voice input prototype
+- AI assistant demonstration
+- future integration preview
 
-## Tech Stack
+## Calendar and Event Management
 
-Planned technologies:
+Users can:
 
-- Frontend: React
-- Backend: FastAPI or Node.js
-- Database: SQLite
-- AI: OpenAI API
-- Version Control: GitHub
+- view upcoming events in a weekly overview
+- open a monthly calendar
+- select days with events
+- add new events
+- edit existing events
+- delete events
+- assign events to family members
+- add several custom reminders
+- configure a separate final alarm
 
-The final tech stack may change during development.
+Normal reminders are intended for preparation.
 
-## Documentation
+The final alarm is intended as the last urgent alert before an event.
 
-More details about the product vision are available in:
+## Brain Dump
 
-- [`docs/vision.md`](docs/vision.md)
+The Brain Dump allows users to capture information without organizing it manually first.
 
-## Author
+Example:
 
-Built by Pia Österlind as part of her transition into software development, AI-powered applications, and cybersecurity.
+> Jonas has a pediatrician appointment on Thursday at 10. Remind me to pack the therapy bag the evening before and give him Vitamin D after breakfast.
+
+The current MVP uses local demonstration logic to show how information could later be classified into:
+
+- appointments
+- tasks
+- medications
+- routines
+- follow-up questions
+
+## Planned Integrations
+
+AI Family OS is designed to connect with existing services such as:
+
+- Google Calendar
+- Apple Calendar
+- Microsoft Outlook
+- Gmail
+- Todoist
+- Apple Reminders
+- Microsoft To Do
+- voice input services
+
+These integrations are shown as part of the product vision but are not yet connected in the current MVP.
+
+## Technology
+
+The current prototype uses:
+
+- React
+- Vite
+- JavaScript
+- CSS
+- local browser state
+- browser Web Speech API where supported
+- GitHub for version control
+
+No backend, database, authentication system, or external AI API is currently required to run the prototype.
+
+## Run the Project Locally
+
+### Requirements
+
+Install a current version of Node.js.
+
+### Installation
+
+Clone the repository:
+
+```bash
+git clone https://github.com/piaoesterlind/ai-family-os.git
