@@ -132,5 +132,104 @@ Install a current version of Node.js.
 
 Clone the repository:
 
-```bash
 git clone https://github.com/piaoesterlind/ai-family-os.git
+
+Open the project folder:
+
+cd ai-family-os
+
+Install the dependencies:
+
+npm install
+
+Start the development server:
+
+npm run dev
+
+Open the local address shown by Vite, usually:
+
+http://localhost:5173
+
+On Windows PowerShell, if npm is blocked by the execution policy, use:
+
+npm.cmd install
+
+npm.cmd run dev
+
+## Testing the MVP
+
+After starting the app, reviewers can test the following:
+
+1. Open the family profile menu.
+2. Add or edit a family member.
+3. Open an event from the weekly calendar.
+4. Open the monthly calendar.
+5. Add, edit, or delete an event.
+6. Add several reminders.
+7. Enable or disable the final alarm.
+8. Complete a task.
+9. Enter information in the Brain Dump.
+10. Process the Brain Dump with the local demo logic.
+11. Ask the demonstration assistant a planning question.
+
+## Current Limitations
+
+This project is a hackathon MVP.
+
+The following features are currently simulated or planned:
+
+- AI processing is local mock logic.
+- The app does not yet call the OpenAI API at runtime.
+- Calendar, email, and task integrations are not yet connected.
+- Data is not stored in a production database.
+- Authentication and multiple-user accounts are not implemented.
+- Voice recognition depends on browser support and may not work reliably in every browser.
+- Push notifications and real alarms are not yet implemented.
+
+## How Codex and GPT-5.6 Were Used
+
+I developed the product concept, target audience, feature priorities, and interaction flow for AI Family OS.
+
+I documented the product vision, MVP scope, and technical direction before implementation.
+
+I then used Codex powered by GPT-5.6 to translate these requirements into a React and Vite prototype.
+
+Codex supported the implementation and iteration of features including:
+
+- mobile-first layout
+- weekly and monthly calendars
+- family member management
+- event creation and editing
+- custom reminders
+- separate final alarm
+- Brain Dump demonstration logic
+- browser voice-input fallback
+- responsive styling
+
+I reviewed and tested each version locally and provided detailed follow-up requirements.
+
+The product decisions and feature priorities were human-directed. Codex and GPT-5.6 accelerated the implementation process.
+
+The current runtime MVP uses local demo processing and does not yet call the GPT-5.6 API.
+
+## Product Direction
+
+The long-term goal is to build an intelligent family operating system that connects calendars, email, tasks, routines, medications, and family information.
+
+Instead of asking parents to organize everything manually, the system should help convert unstructured information into useful actions and clear priorities.
+
+## Documentation
+
+Additional project documentation is available in:
+
+- docs/vision.md
+- docs/mvp.md
+- docs/technical-plan.md
+
+## Author
+
+Built by Pia Österlind as part of her transition into software development and AI-powered applications.
+
+## License
+
+This project is licensed under the MIT License.
